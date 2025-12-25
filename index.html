@@ -140,7 +140,7 @@
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.25);
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-      touch-action:none; /* important */
+      touch-action:none; /* crucial */
     }
 
     .cell{
@@ -334,7 +334,7 @@
             <div class="sub">Selecione em linha reta (horizontal/vertical/diagonal). Atualiza automaticamente ao completar.</div>
           </div>
           <div class="sub">
-            Teclas: <span class="kbd">N</span> nova • <span class="kbd">H</span> dica • <span class="kbd">M</span> som
+            Teclas: <span class="kbd">N</span> nova • <span class="kbd">H</span> dica • <span class="kbd">M</span> som • Toque 2x: início/fim
           </div>
         </header>
 
@@ -356,8 +356,7 @@
           <div class="card">
             <h2>Gestão de risco (setup)</h2>
             <p>
-              Aqui o “edge” é consistência: procure primeiro diagonais longas (melhor payoff de tempo).
-              Use <b>Dica</b> como hedge quando faltar 2 palavras — evita drawdown de tempo e maximiza score.
+              Edge é consistência: primeiro diagonais longas (melhor payoff de tempo). Use <b>Dica</b> como hedge quando faltar 2 palavras.
             </p>
           </div>
 
@@ -413,7 +412,6 @@
 
   // ---------- Utils ----------
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const rand = (a,b)=>Math.random()*(b-a)+a;
   const pick = (arr)=>arr[(Math.random()*arr.length)|0];
   const shuffle = (arr)=>{
     const a = arr.slice();
@@ -481,13 +479,11 @@
   const HIRA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんがぎぐげござじずぜぞだぢづでどぱぴぷぺぽ";
   const KATA = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワンガギグゲゴパピプペポ";
   const fillerChar = ()=>{
-    // mix
     const src = Math.random()<0.82 ? HIRA : KATA;
     return src[(Math.random()*src.length)|0];
   };
 
-  // ---------- Vocabulary pools (mix kana/kanji/katakana) ----------
-  // jp: string (word), pt: meaning
+  // ---------- Vocabulary pools ----------
   const POOLS = [
     {
       name: "🌸 Sakura & Cidade",
@@ -566,51 +562,46 @@
     hard:   { label:"Hard",   size:15, words: 12, maxTries: 1600 },
   };
 
-  let diff = saved.diff in DIFF ? saved.diff : "normal";
+  let diff = (saved.diff in DIFF) ? saved.diff : "normal";
   diffSel.value = diff;
   diffTxt.textContent = DIFF[diff].label;
 
-  // ---------- Game state ----------
+  // ---------- State ----------
   let gridSize = DIFF[diff].size;
-  let grid = [];            // 2D array of chars
-  let cells = [];           // 2D array of cell elements
-  let placedWords = [];     // [{jp, pt, coords:[{r,c}]}]
-  let remaining = new Set(); // word indices remaining
-  let foundCoords = new Set(); // "r,c" string marked as found
+  let grid = [];
+  let cells = [];
+  let placedWords = [];
+  let remaining = new Set();
+  let foundCoords = new Set();
 
   let score = 0;
   let best = saved.best|0;
 
   let runSeq = saved.runSeq|0;
-  let runId = "000";
-
   let running = false;
   let startT = 0;
   let tNow = 0;
   let raf = 0;
 
-  // Selection state
+  // Selection
   let selecting = false;
-  let selStart = null; // {r,c}
-  let selEnd = null;   // {r,c}
-  let selLine = [];    // coords
+  let selStart = null;
+  let selEnd = null;
+  let selLine = [];
   let hintOn = false;
 
-  // ---------- Build grid ----------
+  // Tap-to-select (mobile friendly)
+  let tapStart = null;
+
+  // ---------- Placement ----------
   const DIRS = [
     {dr:0, dc:1}, {dr:0, dc:-1},
     {dr:1, dc:0}, {dr:-1, dc:0},
     {dr:1, dc:1}, {dr:1, dc:-1},
     {dr:-1, dc:1}, {dr:-1, dc:-1},
   ];
-
-  const toChars = (s)=>[...s]; // handles kana/kanji fine
-
-  const emptyGrid = (n)=>{
-    const g = Array.from({length:n}, ()=>Array.from({length:n}, ()=>""));
-    return g;
-  };
-
+  const toChars = (s)=>[...s];
+  const emptyGrid = (n)=> Array.from({length:n}, ()=>Array.from({length:n}, ()=>""));
   const inBounds = (r,c,n)=> r>=0 && c>=0 && r<n && c<n;
 
   const canPlace = (g, wordChars, r0,c0, dr,dc)=>{
@@ -637,11 +628,10 @@
   };
 
   const generatePuzzle = ()=>{
-    // reset
     selecting=false; selStart=null; selEnd=null; selLine=[];
+    tapStart = null;
     foundCoords.clear();
 
-    // choose pool and words
     const pool = pick(POOLS);
     categoryEl.textContent = pool.name;
 
@@ -649,14 +639,12 @@
     gridSize = conf.size;
     grid = emptyGrid(gridSize);
 
-    // pick N words (favor longer)
     const candidates = shuffle(pool.words)
       .sort((a,b)=>toChars(b.jp).length - toChars(a.jp).length);
 
     const picked = [];
     for(const w of candidates){
       if(picked.length >= conf.words) break;
-      // avoid too-short spam
       if(toChars(w.jp).length < 2) continue;
       picked.push(w);
     }
@@ -664,12 +652,10 @@
     placedWords = [];
     remaining = new Set();
 
-    // place words
-    for(let wi=0; wi<picked.length; wi++){
-      const w = picked[wi];
+    for(const w of picked){
       const chars = toChars(w.jp);
-
       let placed = false;
+
       for(let t=0; t<conf.maxTries; t++){
         const dir = pick(DIRS);
         const r0 = (Math.random()*gridSize)|0;
@@ -681,36 +667,27 @@
         placed = true;
         break;
       }
-
-      // if fail, skip (rare), but keep puzzle playable
-      if(!placed){
-        // no-op
-      }
+      // se não couber, ignora (raro) — puzzle continua
+      if(!placed) {}
     }
 
-    // fill empties
     for(let r=0;r<gridSize;r++){
       for(let c=0;c<gridSize;c++){
         if(grid[r][c]==="") grid[r][c]=fillerChar();
       }
     }
 
-    // build UI
     renderBoard();
     renderWords();
 
-    // state
     score = 0;
     scoreEl.textContent = score|0;
     bestEl.textContent = best|0;
 
     runSeq++;
-    runId = String(runSeq).padStart(3,"0");
-    runIdEl.textContent = "#" + runId;
-
+    runIdEl.textContent = "#" + String(runSeq).padStart(3,"0");
     leftEl.textContent = String(remaining.size);
 
-    // timer
     running = true;
     startT = performance.now();
     cancelAnimationFrame(raf);
@@ -718,7 +695,6 @@
     toast("Nova grade gerada. Bora caçar.");
     sfx.start();
 
-    // persist
     save({best, runSeq, diff});
   };
 
@@ -737,8 +713,6 @@
         d.dataset.r = String(r);
         d.dataset.c = String(c);
         d.setAttribute("role","button");
-        d.setAttribute("aria-label", `célula ${r+1},${c+1}`);
-
         cells[r][c]=d;
         boardEl.appendChild(d);
       }
@@ -762,7 +736,7 @@
     });
   };
 
-  // ---------- Timer / Score ----------
+  // ---------- Timer ----------
   const tick = ()=>{
     if(!running) return;
     tNow = (performance.now() - startT)/1000;
@@ -771,21 +745,18 @@
   };
 
   const scoreForWord = (len)=>{
-    // score = length * base, with time pressure
-    // Quanto mais rápido, maior o payoff (estilo trader: execução eficiente).
     const timeFactor = clamp(1.35 - (tNow/120), 0.75, 1.35);
     return Math.round((18 + len*10) * timeFactor);
   };
 
-  // ---------- Selection logic ----------
+  // ---------- Selection core ----------
   const key = (r,c)=>`${r},${c}`;
+
   const clearTempSelection = ()=>{
-    // remove .sel from non-found
     for(let r=0;r<gridSize;r++){
       for(let c=0;c<gridSize;c++){
         const el = cells[r][c];
-        if(!el) continue;
-        if(el.classList.contains("sel") && !el.classList.contains("found")){
+        if(el && el.classList.contains("sel") && !el.classList.contains("found")){
           el.classList.remove("sel");
         }
       }
@@ -814,12 +785,9 @@
     const adr = Math.abs(dr);
     const adc = Math.abs(dc);
 
-    // Must be straight or diagonal
     if(!(dr===0 || dc===0 || adr===adc)) return [];
 
     const steps = Math.max(adr, adc);
-    if(steps===0) return [{r:r1,c:c1}];
-
     const line = [];
     for(let i=0;i<=steps;i++){
       const rr = r1 + sdr*i;
@@ -867,17 +835,38 @@
     }
   };
 
+  const finishIfWin = ()=>{
+    if(remaining.size !== 0) return;
+
+    running = false;
+    cancelAnimationFrame(raf);
+
+    const winBonus = Math.round(clamp(900 - tNow*18, 120, 900));
+    score += winBonus;
+    scoreEl.textContent = score|0;
+
+    if(score > best){
+      best = score|0;
+      bestEl.textContent = best|0;
+      save({best, runSeq, diff});
+    }
+
+    toast(`🏮 Limpo. +${winBonus} bônus. Nova partida...`);
+    sfx.win();
+
+    setTimeout(()=>generatePuzzle(), 900);
+  };
+
   const tryResolveSelection = ()=>{
     if(!selLine.length) return;
 
     const s1 = lineToString(selLine);
-    const s2 = [...s1].reverse().join(""); // reverse selection allowed
+    const s2 = [...s1].reverse().join("");
 
     let hit = -1;
     for(const idx of remaining){
       if(placedWords[idx].jp === s1 || placedWords[idx].jp === s2){
-        hit = idx;
-        break;
+        hit = idx; break;
       }
     }
 
@@ -891,28 +880,7 @@
       toast(`✅ ${placedWords[hit].jp}  +${add}`);
       sfx.ok();
 
-      // Win?
-      if(remaining.size === 0){
-        running = false;
-        cancelAnimationFrame(raf);
-
-        // bonus de fechamento rápido
-        const winBonus = Math.round(clamp(900 - tNow*18, 120, 900));
-        score += winBonus;
-        scoreEl.textContent = score|0;
-
-        if(score > best){
-          best = score|0;
-          bestEl.textContent = best|0;
-          save({best, runSeq, diff});
-        }
-
-        toast(`🏮 Limpo. +${winBonus} bônus. Nova partida...`);
-        sfx.win();
-
-        // auto next game
-        setTimeout(()=>generatePuzzle(), 900);
-      }
+      finishIfWin();
     }else{
       flashBad(selLine);
       toast("❌ Não é palavra da lista.");
@@ -926,10 +894,9 @@
     btnHint.setAttribute("aria-pressed", String(on));
     if(on){
       btnHint.textContent = "👁️ Dica ON";
-      statusEl.innerHTML = `<span>Modo Dica: a primeira letra de 1 palavra restante pisca no grid.</span><span>(Desliga automaticamente em 4s)</span>`;
+      statusEl.innerHTML = `<span>Modo Dica: a primeira letra de 1 palavra restante pisca no grid.</span><span>(Desliga em 4s)</span>`;
       sfx.hint();
 
-      // pick one remaining word and blink first coord
       const idx = pick([...remaining]);
       if(idx !== undefined){
         const p = placedWords[idx].coords[0];
@@ -944,7 +911,6 @@
           }, 180);
         }
       }
-
       setTimeout(()=>setHint(false), 4000);
     }else{
       btnHint.textContent = "👁️ Dica";
@@ -953,42 +919,47 @@
     }
   };
 
-  // ---------- Pointer input (mouse + touch) ----------
-  const getCellFromEvent = (e)=>{
-    const t = e.target.closest(".cell");
-    if(!t) return null;
-    const r = Number(t.dataset.r);
-    const c = Number(t.dataset.c);
+  // ---------- Robust cell detection (FIX) ----------
+  const cellFromPoint = (clientX, clientY)=>{
+    const el = document.elementFromPoint(clientX, clientY);
+    if(!el) return null;
+    const cell = el.closest?.(".cell");
+    if(!cell) return null;
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
     if(Number.isNaN(r) || Number.isNaN(c)) return null;
-    return {r,c, el:t};
+    return {r,c, el:cell};
   };
 
-  const onDown = (e)=>{
-    // allow audio resume on mobile gesture
+  // ---------- Pointer events (mouse + touch via pointer) ----------
+  const onPointerDown = (e)=>{
+    // unlock audio on gesture
     if(ac) ac.resume().catch(()=>{});
-
-    const hit = getCellFromEvent(e);
+    const hit = cellFromPoint(e.clientX, e.clientY);
     if(!hit) return;
+
     e.preventDefault();
     selecting = true;
+    tapStart = null; // if dragging, ignore tap mode
     selStart = {r:hit.r, c:hit.c};
     selEnd = {r:hit.r, c:hit.c};
     selLine = getLine(selStart, selEnd);
     applyLineHighlight(selLine);
-    boardEl.setPointerCapture?.(e.pointerId);
+
+    try{ boardEl.setPointerCapture(e.pointerId); }catch{}
   };
 
-  const onMove = (e)=>{
+  const onPointerMove = (e)=>{
     if(!selecting) return;
-    const hit = getCellFromEvent(e);
-    if(!hit) return;
     e.preventDefault();
+    const hit = cellFromPoint(e.clientX, e.clientY);
+    if(!hit) return;
     selEnd = {r:hit.r, c:hit.c};
     selLine = getLine(selStart, selEnd);
     applyLineHighlight(selLine);
   };
 
-  const onUp = (e)=>{
+  const onPointerUp = (e)=>{
     if(!selecting) return;
     e.preventDefault();
     selecting = false;
@@ -996,10 +967,42 @@
     clearTempSelection();
   };
 
-  // bind pointer events to board
-  boardEl.addEventListener("pointerdown", onDown);
-  boardEl.addEventListener("pointermove", onMove);
-  window.addEventListener("pointerup", onUp);
+  boardEl.addEventListener("pointerdown", onPointerDown, {passive:false});
+  boardEl.addEventListener("pointermove", onPointerMove, {passive:false});
+  window.addEventListener("pointerup", onPointerUp, {passive:false});
+
+  // ---------- Tap-to-select fallback (2 taps) ----------
+  boardEl.addEventListener("click", (e)=>{
+    const cell = e.target.closest?.(".cell");
+    if(!cell) return;
+
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    if(Number.isNaN(r) || Number.isNaN(c)) return;
+
+    // ignore if dragging selection is active
+    if(selecting) return;
+
+    if(!tapStart){
+      tapStart = {r,c};
+      selStart = {r,c};
+      selEnd = {r,c};
+      selLine = [{r,c}];
+      applyLineHighlight(selLine);
+      toast("Início marcado. Toque no fim da palavra.");
+    }else{
+      selStart = tapStart;
+      selEnd = {r,c};
+      selLine = getLine(selStart, selEnd);
+      applyLineHighlight(selLine);
+      tapStart = null;
+
+      setTimeout(()=>{
+        tryResolveSelection();
+        clearTempSelection();
+      }, 60);
+    }
+  });
 
   // ---------- Controls ----------
   const setDiff = (d)=>{
@@ -1018,7 +1021,6 @@
     save({best, runSeq, diff});
     toast("Best resetado.");
   });
-
   diffSel.addEventListener("change", (e)=>setDiff(e.target.value));
 
   window.addEventListener("keydown", (e)=>{
@@ -1031,14 +1033,10 @@
   // ---------- Init ----------
   bestEl.textContent = String(best|0);
   runSeq = saved.runSeq|0;
-
-  // Start with saved diff
   diffSel.value = diff;
   diffTxt.textContent = DIFF[diff].label;
 
-  // start puzzle
   generatePuzzle();
-
 })();
 </script>
 </body>
