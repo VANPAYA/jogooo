@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>ヴァンパイア全知全能 — 夜の漢字バトル</title>
-  <meta name="description" content="Jogo completo para GitHub Pages: batalha + quiz de kanji com estética japonesa, trilha procedural, mobile e salvamento." />
+  <title>新幹線ネオンラン — Shinkansen Neon Run</title>
   <style>
     :root{
       --bg:#070a10;
-      --panel:rgba(255,255,255,.06);
-      --panel2:rgba(255,255,255,.10);
+      --panel:rgba(255,255,255,.08);
       --border:rgba(255,255,255,.14);
       --txt:#eef2ff;
       --muted:rgba(238,242,255,.70);
@@ -18,169 +16,117 @@
       --bad:#fb7185;
       --warn:#fbbf24;
 
-      --hue: 196;
+      --hue: 200;
       --a1: hsl(calc(var(--hue) - 20) 92% 60%);
       --a2: hsl(var(--hue) 92% 58%);
       --a3: hsl(calc(var(--hue) + 60) 92% 62%);
       --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --radius: 18px;
+      --r: 18px;
     }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      background: radial-gradient(1200px 700px at 70% 10%, rgba(80,180,255,.14), transparent 55%),
-                  radial-gradient(900px 600px at 15% 30%, rgba(255,80,210,.12), transparent 55%),
-                  radial-gradient(900px 600px at 60% 90%, rgba(60,255,170,.10), transparent 55%),
-                  var(--bg);
+      overflow:hidden;
+      background:
+        radial-gradient(1100px 650px at 70% 10%, rgba(80,180,255,.14), transparent 55%),
+        radial-gradient(900px 600px at 15% 30%, rgba(255,80,210,.12), transparent 55%),
+        radial-gradient(900px 600px at 60% 90%, rgba(60,255,170,.10), transparent 55%),
+        var(--bg);
       color:var(--txt);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      overflow:hidden;
       user-select:none;
       -webkit-tap-highlight-color: transparent;
     }
+    #c{position:fixed; inset:0; width:100vw; height:100vh; display:block}
 
-    /* Canvas */
-    #stage{
-      position:fixed; inset:0;
-      width:100vw; height:100vh;
-      display:block;
-      background: transparent;
-    }
-
-    /* Top HUD */
     .hud{
       position:fixed; top:14px; left:14px; right:14px;
       display:flex; gap:10px; align-items:stretch;
-      z-index:10;
-      pointer-events:none;
+      z-index:10; pointer-events:none;
     }
-    .hud > *{ pointer-events:auto; }
+    .hud>*{pointer-events:auto}
+    .left{display:flex; gap:10px; flex-wrap:wrap}
+    .right{margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
 
     .chip{
       display:flex; gap:10px; align-items:center;
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
       border:1px solid var(--border);
-      border-radius: 999px;
+      border-radius:999px;
       padding:10px 12px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
     }
-    .chip .label{ color:var(--muted2); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
-    .chip .value{ font-weight:700; }
-    .hud .left{ display:flex; gap:10px; flex-wrap:wrap; }
-    .hud .right{ margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
-
-    .bar{
-      width:180px;
-      height:12px;
-      border-radius:999px;
-      overflow:hidden;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
-    }
-    .bar > i{
-      display:block; height:100%;
-      width:50%;
-      background: linear-gradient(90deg, var(--a2), var(--a3));
-      border-radius:999px;
-      box-shadow: 0 0 16px rgba(80,200,255,.35);
-    }
-    .bar.hp > i{ background: linear-gradient(90deg, var(--good), #22c55e); box-shadow: 0 0 16px rgba(52,211,153,.35); }
-    .bar.enemy > i{ background: linear-gradient(90deg, #fb7185, #f97316); box-shadow: 0 0 16px rgba(251,113,133,.35); }
-
+    .chip .label{color:var(--muted2); font-size:12px; letter-spacing:.08em; text-transform:uppercase}
+    .chip .value{font-weight:900}
     .btn{
-      display:inline-flex; gap:8px; align-items:center; justify-content:center;
-      border-radius: 999px;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      border-radius:999px;
       border:1px solid var(--border);
       padding:10px 12px;
       background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      color: var(--txt);
+      color:var(--txt);
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
       cursor:pointer;
-      transition: transform .08s ease, border-color .2s ease, background .2s ease;
-      font-weight:700;
-      font-size:13px;
+      font-weight:900; font-size:13px;
+      transition: transform .08s ease, border-color .2s ease;
     }
-    .btn:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
-    .btn[aria-pressed="true"]{ outline:2px solid rgba(80,200,255,.25); }
+    .btn:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22)}
+    .btn:active{transform: translateY(0) scale(.99)}
+    .btn[aria-pressed="true"]{outline:2px solid rgba(80,200,255,.25)}
 
-    /* Main overlay panels */
+    .bar{
+      width:160px; height:12px; border-radius:999px; overflow:hidden;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+    }
+    .bar i{display:block; height:100%; width:50%; border-radius:999px; background: linear-gradient(90deg,var(--a2),var(--a3)); box-shadow:0 0 16px rgba(80,200,255,.28)}
+    .bar.shield i{background: linear-gradient(90deg, var(--good), #22c55e); box-shadow:0 0 16px rgba(52,211,153,.22)}
+    .bar.slow i{background: linear-gradient(90deg, var(--warn), var(--a3)); box-shadow:0 0 16px rgba(251,191,36,.20)}
+
     .overlay{
       position:fixed; inset:0;
       display:flex; align-items:center; justify-content:center;
-      z-index:20;
       padding:18px;
-      background: radial-gradient(900px 700px at 50% 20%, rgba(0,0,0,.55), rgba(0,0,0,.76));
+      z-index:20;
+      background: radial-gradient(900px 700px at 50% 20%, rgba(0,0,0,.55), rgba(0,0,0,.78));
       backdrop-filter: blur(6px);
     }
-    .hidden{ display:none !important; }
-
+    .hidden{display:none!important}
     .panel{
-      width:min(980px, 100%);
-      border-radius: var(--radius);
+      width:min(980px,100%);
+      border-radius: var(--r);
       border:1px solid var(--border);
       background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
       box-shadow: var(--shadow);
       overflow:hidden;
     }
-    .panel header{
+    header{
       padding:18px 18px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
+      border-bottom:1px solid rgba(255,255,255,.10);
       background: linear-gradient(90deg, rgba(80,200,255,.12), rgba(255,80,210,.08), rgba(60,255,170,.08));
     }
-    .title{
-      display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;
-    }
-    .title h1{
-      margin:0;
-      font-size:22px;
-      letter-spacing:.02em;
-    }
-    .title .sub{
-      color:var(--muted);
-      font-size:12.5px;
-      line-height:1.4;
-    }
-    .panel .content{
+    h1{margin:0; font-size:22px; letter-spacing:.02em}
+    .sub{color:var(--muted); font-size:12.5px; line-height:1.4; margin-top:6px}
+    .content{
       padding:18px;
       display:grid;
       grid-template-columns: 1.1fr .9fr;
       gap:16px;
     }
-    @media (max-width: 860px){
-      .panel .content{ grid-template-columns: 1fr; }
-      .bar{ width:150px; }
-    }
-
+    @media (max-width: 860px){ .content{grid-template-columns:1fr} .bar{width:140px} }
     .card{
       border-radius: 16px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.20);
       padding:14px;
     }
-    .card h2{ margin:0 0 8px; font-size:14px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
-    .card p{ margin:0; color:var(--muted); line-height:1.55; font-size:14px; }
-    .kbd{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius: 8px;
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
-      font-weight:800;
-      font-size:12px;
-      color:var(--txt);
-      margin: 0 3px;
-    }
-
-    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    @media (max-width: 520px){ .grid2{ grid-template-columns: 1fr; } }
-
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .card h2{margin:0 0 8px; font-size:14px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase}
+    .card p{margin:0; color:var(--muted); line-height:1.55; font-size:14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .pill{
       border-radius:999px;
       padding:7px 10px;
@@ -188,201 +134,42 @@
       background: rgba(255,255,255,.06);
       color:var(--muted);
       font-size:13px;
-    }
-
-    /* Battle UI bottom */
-    .battleUI{
-      position:fixed;
-      left:14px; right:14px; bottom:14px;
-      z-index:12;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-      pointer-events:none;
-    }
-    .battleUI > *{ pointer-events:auto; }
-
-    .question{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:10px; flex-wrap:wrap;
-      padding:12px 12px;
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.36);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-    .qLeft{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .kanjiBox{
-      width:58px; height:58px;
-      display:grid; place-items:center;
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-    }
-    .kanjiBox b{
-      font-size:30px;
-      text-shadow: 0 0 18px rgba(80,200,255,.35);
-    }
-    .qMeta{ display:flex; flex-direction:column; gap:4px; min-width: 220px; }
-    .qMeta .hint{ color:var(--muted2); font-size:12px; letter-spacing:.06em; text-transform:uppercase; }
-    .qMeta .prompt{ font-size:14px; color:var(--txt); }
-    .timer{
-      display:flex; align-items:center; gap:10px;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .tinyBar{
-      width:170px; height:10px; border-radius:999px; overflow:hidden;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-    }
-    .tinyBar i{
-      display:block; height:100%; width:100%;
-      background: linear-gradient(90deg, var(--warn), var(--a3));
-      box-shadow: 0 0 16px rgba(251,191,36,.25);
-    }
-
-    .answers{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    @media (max-width: 680px){ .answers{ grid-template-columns: 1fr; } }
-
-    .ans{
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      box-shadow: var(--shadow);
-      padding:12px;
-      cursor:pointer;
-      transition: transform .08s ease, border-color .15s ease, filter .15s ease;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-    }
-    .ans:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.22); }
-    .ans:active{ transform: translateY(0px) scale(.99); }
-    .ans .k{
-      color:var(--muted2);
       font-weight:900;
-      width:28px; height:28px;
-      display:grid; place-items:center;
-      border-radius: 10px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.15);
-      font-size:12px;
-      flex: 0 0 auto;
     }
-    .ans .t{
-      font-weight:900;
-      font-size:14px;
-    }
-    .ans .s{
-      color:var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      opacity:.9;
-    }
-    .ans.good{ border-color: rgba(52,211,153,.55); filter: drop-shadow(0 0 14px rgba(52,211,153,.18)); }
-    .ans.bad{ border-color: rgba(251,113,133,.55); filter: drop-shadow(0 0 14px rgba(251,113,133,.18)); }
-
-    /* Toast */
-    .toast{
-      position:fixed;
-      left:50%;
-      transform: translateX(-50%);
-      top:84px;
-      z-index:30;
-      padding:10px 12px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.42);
-      box-shadow: var(--shadow);
-      color: var(--txt);
-      font-weight:800;
-      font-size:13px;
-      letter-spacing:.02em;
-      backdrop-filter: blur(10px);
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .25s ease, transform .25s ease;
-      display:flex; gap:10px; align-items:center;
-    }
-    .toast.show{
-      opacity:1;
-      transform: translateX(-50%) translateY(0);
-    }
-    .toast i{
-      width:10px; height:10px; border-radius:99px;
-      background: var(--a2);
-      box-shadow: 0 0 14px rgba(80,200,255,.35);
-    }
-
-    /* Small footer tips */
-    .footerTips{
-      margin-top:10px;
-      display:flex; gap:10px; flex-wrap:wrap;
-      color:var(--muted2);
-      font-size:12px;
-    }
-
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-
-    .select{
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.25);
-      color: var(--txt);
-      padding:9px 10px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    .tag{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.14);
+    .kbd{
+      display:inline-block; padding:3px 8px; border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
       background: rgba(255,255,255,.06);
-      color:var(--muted);
-      font-size:13px;
-      font-weight:800;
+      font-weight:900; font-size:12px; color:var(--txt);
+      margin: 0 3px;
     }
 
-    /* Touch controls */
-    .touchPad{
-      position:fixed;
-      right:14px;
-      bottom:14px;
-      z-index:13;
-      display:none;
-      gap:10px;
-      pointer-events:none;
+    .touch{
+      position:fixed; left:14px; right:14px; bottom:14px;
+      display:none; gap:10px; z-index:12; pointer-events:none;
+      justify-content:space-between;
     }
-    .touchPad > *{ pointer-events:auto; }
+    .touch>*{pointer-events:auto}
     .touchBtn{
-      width:54px; height:54px;
+      flex:1;
+      padding:14px 12px;
       border-radius: 18px;
       border:1px solid rgba(255,255,255,.14);
       background: rgba(0,0,0,.34);
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
-      display:grid; place-items:center;
+      display:flex; justify-content:center; align-items:center;
       font-weight:900;
       cursor:pointer;
       user-select:none;
     }
-    .touchBtn:active{ transform: scale(.98); }
-    @media (hover: none) and (pointer: coarse){
-      .touchPad{ display:flex; }
-    }
+    .touchBtn:active{transform: scale(.99)}
+    @media (hover: none) and (pointer: coarse){ .touch{display:flex} }
   </style>
 </head>
 <body>
-  <canvas id="stage"></canvas>
+  <canvas id="c"></canvas>
 
-  <!-- HUD -->
   <div class="hud">
     <div class="left">
       <div class="chip">
@@ -391,1503 +178,943 @@
           <div class="value" id="score">0</div>
         </div>
         <div>
-          <div class="label">Combo</div>
-          <div class="value" id="combo">x1</div>
+          <div class="label">Mult</div>
+          <div class="value" id="mult">x1.0</div>
+        </div>
+        <div>
+          <div class="label">Best</div>
+          <div class="value" id="best">0</div>
         </div>
       </div>
 
       <div class="chip">
         <div>
-          <div class="label">Você</div>
-          <div class="bar hp"><i id="hpBar"></i></div>
+          <div class="label">Shield</div>
+          <div class="bar shield"><i id="shieldBar"></i></div>
         </div>
         <div>
-          <div class="label">Inimigo</div>
-          <div class="bar enemy"><i id="enemyBar"></i></div>
+          <div class="label">Slow</div>
+          <div class="bar slow"><i id="slowBar"></i></div>
         </div>
       </div>
 
       <div class="chip">
         <div>
-          <div class="label">Noite</div>
-          <div class="bar"><i id="moonBar"></i></div>
+          <div class="label">Velocidade</div>
+          <div class="value" id="spd">1.0x</div>
+        </div>
+        <div>
+          <div class="label">Trilhos</div>
+          <div class="value" id="laneTxt">3/5</div>
         </div>
       </div>
     </div>
 
     <div class="right">
-      <button class="btn" id="btnPause" title="Pausar (P)">⏸︎ Pausar</button>
-      <button class="btn" id="btnAudio" aria-pressed="false" title="Som (M)">🔇 Som</button>
-      <select class="select" id="langSel" title="Idioma">
-        <option value="pt">PT</option>
-        <option value="jp">JP</option>
-        <option value="en">EN</option>
-      </select>
+      <button class="btn" id="btnPause">⏸︎ Pausar</button>
+      <button class="btn" id="btnAudio" aria-pressed="false">🔇 Som</button>
+      <button class="btn" id="btnRestart">🔁 Reiniciar</button>
     </div>
   </div>
 
-  <!-- Battle UI -->
-  <div class="battleUI" id="battleUI">
-    <div class="question">
-      <div class="qLeft">
-        <div class="kanjiBox"><b id="kanjiChar">夜</b></div>
-        <div class="qMeta">
-          <div class="hint" id="qHint">Escolha a leitura (かな)</div>
-          <div class="prompt" id="qPrompt">Qual é a leitura correta?</div>
-        </div>
-      </div>
-
-      <div class="timer">
-        <span class="mono" id="timerTxt">10.0s</span>
-        <div class="tinyBar"><i id="timeBar"></i></div>
-      </div>
-    </div>
-
-    <div class="answers" id="answers"></div>
-
-    <div class="row" style="justify-content:space-between; gap:12px;">
-      <div class="row">
-        <span class="tag" id="itemOfuda">🧿 Ofuda: <b id="ofudaN">2</b></span>
-        <span class="tag" id="itemSmoke">🌫️ Fumaça: <b id="smokeN">1</b></span>
-      </div>
-      <div class="footerTips" id="tips">
-        <span>Teclas: <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span><span class="kbd">4</span></span>
-        <span>Itens: <span class="kbd">H</span> cura, <span class="kbd">J</span> pular</span>
-        <span>Pausar: <span class="kbd">P</span> • Som: <span class="kbd">M</span></span>
-      </div>
-    </div>
+  <div class="touch">
+    <div class="touchBtn" id="tLeft">⬅️ Left</div>
+    <div class="touchBtn" id="tDash">⚡ Dash</div>
+    <div class="touchBtn" id="tRight">➡️ Right</div>
   </div>
 
-  <!-- Touch pad -->
-  <div class="touchPad">
-    <div class="touchBtn" id="tHeal" title="Cura (H)">🧿</div>
-    <div class="touchBtn" id="tSkip" title="Pular (J)">🌫️</div>
-  </div>
-
-  <!-- Start / Menu -->
   <div class="overlay" id="menu">
     <div class="panel">
       <header>
-        <div class="title">
-          <h1>ヴァンパイア全知全能 — 夜の漢字バトル</h1>
-          <div class="sub" id="menuSub">Batalha/quiz de kanji no neon de Tóquio. Suba combo, use ofuda, sobreviva à Lua de Sangue.</div>
-        </div>
+        <h1>新幹線ネオンラン — Shinkansen Neon Run</h1>
+        <div class="sub">Runner arcade em 5 trilhos: desvie, colete tickets, gerencie risco com Shield e Slow Time. Neon japonês + som procedural.</div>
       </header>
-
       <div class="content">
         <div class="card">
-          <h2 id="storyT">História</h2>
-          <p id="storyP">
-            Na noite em que a <b>Lua de Sangue</b> nasce, os yokai atravessam o véu. Você é um caçador
-            que selou um pacto: <b>vencer usando conhecimento</b>. Cada kanji correto vira um golpe.
-            Cada erro alimenta a escuridão.
+          <h2>Como joga</h2>
+          <p>
+            Você é um Shinkansen correndo na noite de Tóquio. Troque de trilho para evitar barreiras.
+            Pegue <b>🎫 Tickets</b> para subir score e multiplicador. Pegue <b>🛡️ Shield</b> para tankar 1 hit e
+            <b>⏳ Slow</b> para reduzir a velocidade por alguns segundos.
           </p>
-
-          <div style="height:12px"></div>
-
-          <div class="grid2">
-            <div class="card">
-              <h2 id="howT">Como jogar</h2>
-              <p id="howP">
-                Responda antes do tempo acabar. Acertos aumentam <b>combo</b> e dão mais dano.
-                Errar tira vida e quebra o ritmo. Itens:
-                <b>Ofuda</b> cura; <b>Fumaça</b> pula uma pergunta (mas reduz combo).
-              </p>
-            </div>
-            <div class="card">
-              <h2 id="modeT">Config</h2>
-              <div class="row" style="margin-top:6px">
-                <span class="pill" id="bestPill">Recorde: <b id="best">0</b></span>
-                <span class="pill">Dificuldade: <b id="diffTxt">Normal</b></span>
-                <button class="btn" id="btnDiff">⚙️ Alternar</button>
-              </div>
-              <div class="row" style="margin-top:10px">
-                <span class="pill">Tema: <b id="themeTxt">Neon</b></span>
-                <button class="btn" id="btnTheme">🎴 Mudar</button>
-              </div>
-              <div class="row" style="margin-top:10px">
-                <button class="btn" id="btnStart">⚔️ Começar</button>
-                <button class="btn" id="btnTutorial">📜 Tutorial rápido</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="footerTips" style="margin-top:12px">
-            <span>Funciona offline • 1 arquivo • Ideal pra GitHub Pages</span>
-            <span>Estética japonesa + trilha procedural</span>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 id="loreT">Missão da Noite</h2>
-          <p id="loreP">
-            Você enfrenta quatro chefes (rotativos): <b>影 Kage</b>, <b>狐 Kitsune</b>, <b>鬼 Oni</b> e
-            <b>黒翼 Koku-yoku</b>. Eles mudam o tipo de pergunta: leitura, significado e uso.
-            Quando a barra da <b>Noite</b> enche, começa o <b>Blood Moon Mode</b>: mais rápido, mais dano,
-            mais pontos.
+          <div style="height:10px"></div>
+          <p>
+            Controles: <span class="kbd">←</span><span class="kbd">→</span> trocar trilho • <span class="kbd">Space</span> Dash (micro-invuln) •
+            <span class="kbd">P</span> pausa • <span class="kbd">M</span> som
           </p>
-          <div style="height:12px"></div>
+          <div style="height:10px"></div>
           <div class="card" style="background: rgba(255,255,255,.05);">
-            <h2 id="tipsT">Dica de risco (gameplan)</h2>
-            <p id="riskP">
-              Gestão de risco aqui é simples: preserve HP para o Blood Moon. Use cura quando estiver abaixo de 45%.
-              Se a pergunta for armadilha, pule (fumaça) e mantenha fluxo.
+            <h2>Setup (estilo trader)</h2>
+            <p>
+              Prioridade é <b>sobrevivência</b>: mantenha trilho central como “posição neutra” e só gira pro extremo quando o fluxo exigir.
+              Use Dash como <b>stop de emergência</b>. Shield é <b>hedge</b>. Slow é <b>redução de volatilidade</b> pra manter consistência e score.
             </p>
           </div>
           <div style="height:12px"></div>
           <div class="row">
-            <button class="btn" id="btnReset">🧹 Resetar recorde</button>
-            <button class="btn" id="btnCredits">🪧 Créditos</button>
+            <button class="btn" id="btnStart">⚔️ Start</button>
+            <span class="pill">Mobile: swipe left/right</span>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Tutorial overlay -->
-  <div class="overlay hidden" id="tutorial">
-    <div class="panel">
-      <header>
-        <div class="title">
-          <h1 id="tutTitle">📜 Tutorial rápido</h1>
-          <div class="sub" id="tutSub">30 segundos e você já domina.</div>
-        </div>
-      </header>
-      <div class="content">
         <div class="card">
-          <h2>Fluxo</h2>
+          <h2>Regras</h2>
           <p>
-            1) Um kanji aparece.<br/>
-            2) Escolha 1 de 4 respostas.<br/>
-            3) Acertou → dano + combo + score.<br/>
-            4) Errou ou tempo acabou → você toma dano e perde combo.
-          </p>
-          <div style="height:10px"></div>
-          <p>
-            <b>Atalhos:</b> <span class="kbd">1</span><span class="kbd">2</span><span class="kbd">3</span><span class="kbd">4</span> responder •
-            <span class="kbd">H</span> Ofuda • <span class="kbd">J</span> Fumaça • <span class="kbd">P</span> Pausa • <span class="kbd">M</span> Som
-          </p>
-        </div>
-        <div class="card">
-          <h2>Blood Moon</h2>
-          <p>
-            Quando a barra <b>Noite</b> chega em 100%, você entra em modo Blood Moon por alguns segundos:
-            perguntas mais rápidas, dano maior e multiplicador de pontos. Se você sobreviver, volta ao normal.
-          </p>
-          <div style="height:10px"></div>
-          <p>
-            <b>Meta:</b> manter o combo alto antes do Blood Moon para “explodir” o score.
+            • Colisão sem Shield = Game Over.<br/>
+            • Dash dá uma janela curta de invulnerabilidade e ajuda a atravessar “gaps”.<br/>
+            • Multiplicador cai levemente quando você fica muito tempo sem pegar ticket (pressão de performance).<br/>
+            • A velocidade sobe com o tempo (market acelera).
           </p>
           <div style="height:12px"></div>
-          <button class="btn" id="btnTutClose">✅ Entendi</button>
+          <div class="row">
+            <span class="pill">Power-ups: 🛡️ ⏳ ⚡</span>
+            <span class="pill">Obstáculos: 🚧 ⛔</span>
+          </div>
+          <div style="height:12px"></div>
+          <button class="btn" id="btnTheme">🎴 Mudar tema</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Game over overlay -->
-  <div class="overlay hidden" id="gameover">
+  <div class="overlay hidden" id="over">
     <div class="panel">
       <header>
-        <div class="title">
-          <h1 id="goTitle">🌙 Fim da Noite</h1>
-          <div class="sub" id="goSub">Resumo da run + recorde salvo no seu navegador.</div>
-        </div>
+        <h1>🌙 Run encerrada</h1>
+        <div class="sub">Resumo da execução e recorde salvo no navegador.</div>
       </header>
       <div class="content">
         <div class="card">
-          <h2 id="sumT">Resumo</h2>
-          <p id="sumP"></p>
-          <div style="height:10px"></div>
+          <h2>Resultado</h2>
+          <p id="sum"></p>
+          <div style="height:12px"></div>
           <div class="row">
-            <span class="pill">Score: <b id="goScore">0</b></span>
-            <span class="pill">Recorde: <b id="goBest">0</b></span>
-            <span class="pill">Precisão: <b id="goAcc">0%</b></span>
+            <span class="pill">Score: <b id="oScore">0</b></span>
+            <span class="pill">Best: <b id="oBest">0</b></span>
+            <span class="pill">Max Mult: <b id="oMult">x1.0</b></span>
+            <span class="pill">Tempo: <b id="oTime">0s</b></span>
           </div>
           <div style="height:12px"></div>
           <div class="row">
             <button class="btn" id="btnAgain">🔁 Jogar de novo</button>
-            <button class="btn" id="btnMenu">🏮 Menu</button>
+            <button class="btn" id="btnBack">🏮 Menu</button>
           </div>
         </div>
+
         <div class="card">
-          <h2 id="unlockT">Conquistas</h2>
-          <p id="unlockP">—</p>
+          <h2>Compartilhar</h2>
+          <p class="card" style="background: rgba(255,255,255,.05); border-radius: 14px;" id="share"></p>
           <div style="height:12px"></div>
-          <div class="card" style="background: rgba(255,255,255,.05);">
-            <h2>Compartilhar</h2>
-            <p class="mono" id="shareTxt"></p>
-          </div>
+          <p>
+            Dica: se quiser, eu transformo isso em <b>modo campanha</b> (estações de trem como fases), com ranking por nome e mais powerups.
+          </p>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"><i></i><span id="toastTxt">—</span></div>
+<script>
+(() => {
+  const $ = (id)=>document.getElementById(id);
+  const c = $("c");
+  const g = c.getContext("2d");
 
-  <script>
-    /********************
-     *  ヴァンパイア全知全能 — 夜の漢字バトル
-     *  Single-file game for GitHub Pages (no deps)
-     ********************/
+  const menu = $("menu");
+  const over = $("over");
 
-    // ---------- i18n ----------
-    const I18N = {
-      pt: {
-        menuSub: "Batalha/quiz de kanji no neon de Tóquio. Suba combo, use ofuda, sobreviva à Lua de Sangue.",
-        storyT: "História",
-        storyP: "Na noite em que a Lua de Sangue nasce, os yokai atravessam o véu. Você é um caçador que selou um pacto: vencer usando conhecimento. Cada kanji correto vira um golpe. Cada erro alimenta a escuridão.",
-        howT: "Como jogar",
-        howP: "Responda antes do tempo acabar. Acertos aumentam combo e dão mais dano. Errar tira vida e quebra o ritmo. Itens: Ofuda cura; Fumaça pula uma pergunta (mas reduz combo).",
-        loreT: "Missão da Noite",
-        loreP: "Você enfrenta quatro chefes (rotativos): 影 Kage, 狐 Kitsune, 鬼 Oni e 黒翼 Koku-yoku. Eles mudam o tipo de pergunta: leitura, significado e uso. Quando a barra da Noite enche, começa o Blood Moon Mode: mais rápido, mais dano, mais pontos.",
-        tipsT: "Dica de risco (gameplan)",
-        riskP: "Gestão de risco aqui é simples: preserve HP para o Blood Moon. Use cura quando estiver abaixo de 45%. Se a pergunta for armadilha, pule (fumaça) e mantenha fluxo.",
-        qHint_read: "Escolha a leitura (かな)",
-        qHint_mean: "Escolha o significado (PT)",
-        qHint_use: "Complete a frase (uso)",
-        qPrompt_read: "Qual é a leitura correta?",
-        qPrompt_mean: "Qual é o significado?",
-        qPrompt_use: "Qual opção completa melhor?",
-        pause: "⏸︎ Pausado",
-        resume: "▶︎ Voltar",
-        soundOn: "🔊 Som",
-        soundOff: "🔇 Som",
-        tutorialTitle: "📜 Tutorial rápido",
-        tutorialSub: "30 segundos e você já domina.",
-        goTitle: "🌙 Fim da Noite",
-        goSub: "Resumo da run + recorde salvo no seu navegador.",
-        sumT: "Resumo",
-        unlockT: "Conquistas",
-        start: "⚔️ Começar",
-        tut: "📜 Tutorial rápido",
-      },
-      jp: {
-        menuSub: "東京ネオンの漢字バトル。コンボを上げ、御札を使い、血の月を生き残れ。",
-        storyT: "ストーリー",
-        storyP: "血の月の夜、妖怪が境界を越える。あなたは知識で戦う狩人。正しい漢字は斬撃になり、ミスは闇を育てる。",
-        howT: "遊び方",
-        howP: "時間内に答える。正解→コンボ上昇＆ダメージ増。ミス→被ダメ＆コンボ崩壊。アイテム: 御札=回復、煙=問題スキップ（コンボ減）。",
-        loreT: "夜の任務",
-        loreP: "ボスはローテーション: 影・狐・鬼・黒翼。問題タイプが変化（読み/意味/用法）。「夜」ゲージが満タンでBlood Moonへ：高速・高火力・高得点。",
-        tipsT: "リスク管理",
-        riskP: "Blood MoonにHPを残せ。HP45%以下で回復。罠っぽい問題は煙で流れを守る。",
-        qHint_read: "読み（かな）を選べ",
-        qHint_mean: "意味を選べ",
-        qHint_use: "文を完成させろ",
-        qPrompt_read: "正しい読みは？",
-        qPrompt_mean: "意味は？",
-        qPrompt_use: "最も自然な選択は？",
-        pause: "⏸︎ 一時停止",
-        resume: "▶︎ 再開",
-        soundOn: "🔊 音",
-        soundOff: "🔇 音",
-        tutorialTitle: "📜 クイックチュートリアル",
-        tutorialSub: "30秒でOK。",
-        goTitle: "🌙 夜が終わった",
-        goSub: "結果 + ブラウザに記録保存。",
-        sumT: "まとめ",
-        unlockT: "実績",
-        start: "⚔️ 開始",
-        tut: "📜 チュートリアル",
-      },
-      en: {
-        menuSub: "Tokyo-neon kanji battle. Build combo, use ofuda, survive the Blood Moon.",
-        storyT: "Story",
-        storyP: "On Blood Moon night, yokai cross the veil. You fight with knowledge. Correct kanji becomes a strike. Mistakes feed the darkness.",
-        howT: "How to play",
-        howP: "Answer before time runs out. Correct = higher combo & more damage. Wrong = you take damage & lose rhythm. Items: Ofuda heals; Smoke skips (but reduces combo).",
-        loreT: "Night Mission",
-        loreP: "Four rotating bosses: Kage, Kitsune, Oni, Koku-yoku. They change question type (reading/meaning/usage). When Night bar fills, Blood Moon starts: faster, deadlier, higher score.",
-        tipsT: "Risk plan",
-        riskP: "Preserve HP for Blood Moon. Heal below 45%. If the question is a trap, skip to keep flow.",
-        qHint_read: "Pick the reading (kana)",
-        qHint_mean: "Pick the meaning",
-        qHint_use: "Complete the sentence",
-        qPrompt_read: "Which reading is correct?",
-        qPrompt_mean: "What does it mean?",
-        qPrompt_use: "Which option fits best?",
-        pause: "⏸︎ Paused",
-        resume: "▶︎ Resume",
-        soundOn: "🔊 Sound",
-        soundOff: "🔇 Sound",
-        tutorialTitle: "📜 Quick tutorial",
-        tutorialSub: "You’ll get it in 30 seconds.",
-        goTitle: "🌙 Night Ends",
-        goSub: "Run summary + best score saved locally.",
-        sumT: "Summary",
-        unlockT: "Achievements",
-        start: "⚔️ Start",
-        tut: "📜 Tutorial",
-      }
-    };
+  const scoreEl = $("score");
+  const multEl = $("mult");
+  const bestEl = $("best");
+  const spdEl = $("spd");
+  const laneTxt = $("laneTxt");
+  const shieldBar = $("shieldBar");
+  const slowBar = $("slowBar");
 
-    // ---------- dataset ----------
-    // Types:
-    // - read: choose kana reading
-    // - mean: choose PT meaning
-    // - use: choose best completion
-    const DB = [
-      {k:"夜", type:"read", promptJP:"よる", ans:"よる", opts:["よる","や","ひる","よな"]},
-      {k:"水", type:"read", promptJP:"みず", ans:"みず", opts:["みず","すい","みつ","みす"]},
-      {k:"火", type:"read", promptJP:"ひ", ans:"ひ", opts:["ひ","ほ","か","び"]},
-      {k:"風", type:"read", promptJP:"かぜ", ans:"かぜ", opts:["かぜ","ふう","かぢ","はぜ"]},
-      {k:"山", type:"read", promptJP:"やま", ans:"やま", opts:["やま","さん","やむ","しま"]},
-      {k:"川", type:"read", promptJP:"かわ", ans:"かわ", opts:["かわ","がわ","かわい","せん"]},
-      {k:"雨", type:"read", promptJP:"あめ", ans:"あめ", opts:["あめ","う","あみ","あま"]},
-      {k:"心", type:"read", promptJP:"こころ", ans:"こころ", opts:["こころ","しん","こごろ","ここら"]},
-      {k:"光", type:"read", promptJP:"ひかり", ans:"ひかり", opts:["ひかり","こう","ぴかり","ひかる"]},
-      {k:"影", type:"read", promptJP:"かげ", ans:"かげ", opts:["かげ","えい","かき","かね"]},
+  const btnPause = $("btnPause");
+  const btnAudio = $("btnAudio");
+  const btnRestart = $("btnRestart");
+  const btnStart = $("btnStart");
+  const btnTheme = $("btnTheme");
+  const btnAgain = $("btnAgain");
+  const btnBack = $("btnBack");
 
-      {k:"友", type:"mean", ans:"amigo", opts:["amigo","inimigo","cidade","tempo"]},
-      {k:"犬", type:"mean", ans:"cachorro", opts:["cachorro","gato","pássaro","peixe"]},
-      {k:"猫", type:"mean", ans:"gato", opts:["gato","cavalo","pato","cachorro"]},
-      {k:"空", type:"mean", ans:"céu", opts:["céu","mar","fogo","pedra"]},
-      {k:"雪", type:"mean", ans:"neve", opts:["neve","chuva","vento","calor"]},
-      {k:"駅", type:"mean", ans:"estação (trem)", opts:["estação (trem)","hospital","mercado","escola"]},
-      {k:"名", type:"mean", ans:"nome", opts:["nome","número","rua","porta"]},
-      {k:"力", type:"mean", ans:"força", opts:["força","fraco","rápido","lento"]},
-      {k:"夢", type:"mean", ans:"sonho", opts:["sonho","medo","fome","sono"]},
-      {k:"闇", type:"mean", ans:"escuridão", opts:["escuridão","claridade","alegria","vontade"]},
+  const tLeft = $("tLeft");
+  const tRight = $("tRight");
+  const tDash = $("tDash");
 
-      {k:"行", type:"use", ans:"行きます", sentence:"明日、東京へ ___ 。", opts:["行きます","来ます","見ます","買います"]},
-      {k:"見", type:"use", ans:"見ます", sentence:"映画を ___ 。", opts:["見ます","飲みます","書きます","読みます"]},
-      {k:"食", type:"use", ans:"食べます", sentence:"寿司を ___ 。", opts:["食べます","走ります","寝ます","会います"]},
-      {k:"読", type:"use", ans:"読みます", sentence:"本を ___ 。", opts:["読みます","買います","泳ぎます","話します"]},
-      {k:"書", type:"use", ans:"書きます", sentence:"名前を ___ 。", opts:["書きます","聞きます","起きます","歩きます"]},
-      {k:"飲", type:"use", ans:"飲みます", sentence:"水を ___ 。", opts:["飲みます","見ます","行きます","着ます"]},
-      {k:"来", type:"use", ans:"来ます", sentence:"先生が ___ 。", opts:["来ます","行きます","住みます","します"]},
-      {k:"買", type:"use", ans:"買います", sentence:"コンビニで ___ 。", opts:["買います","書きます","切ります","話します"]},
-    ];
+  const sum = $("sum");
+  const oScore = $("oScore");
+  const oBest = $("oBest");
+  const oMult = $("oMult");
+  const oTime = $("oTime");
+  const share = $("share");
 
-    // ---------- state ----------
-    const $ = (id)=>document.getElementById(id);
-    const canvas = $("stage");
-    const ctx = canvas.getContext("2d");
+  // ---------- Persist ----------
+  const KEY = "shinkansen-neon-run-v1";
+  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(KEY)||"null"); }catch{ return null; } };
+  const save = (obj)=>{ try{ localStorage.setItem(KEY, JSON.stringify(obj)); }catch{} };
+  const saved = load() || { best: 0, theme: 0 };
+  let best = saved.best|0;
 
-    const menu = $("menu");
-    const tutorial = $("tutorial");
-    const gameover = $("gameover");
+  // ---------- Themes ----------
+  const THEMES = [
+    {name:"Neon", hue:200},
+    {name:"Sakura", hue:320},
+    {name:"Kitsune", hue:38},
+    {name:"Abyss", hue:220},
+  ];
+  let theme = Math.max(0, Math.min(THEMES.length-1, saved.theme|0));
+  const applyTheme = ()=>{
+    document.documentElement.style.setProperty("--hue", THEMES[theme].hue);
+    btnTheme.textContent = "🎴 Tema: " + THEMES[theme].name;
+    save({best, theme});
+  };
+  applyTheme();
 
-    const scoreEl = $("score");
-    const comboEl = $("combo");
-    const hpBar = $("hpBar");
-    const enemyBar = $("enemyBar");
-    const moonBar = $("moonBar");
+  // ---------- Canvas resize ----------
+  let W=0, H=0, DPR=1;
+  const resize = ()=>{
+    DPR = Math.max(1, Math.min(2, devicePixelRatio || 1));
+    W = Math.floor(innerWidth*DPR);
+    H = Math.floor(innerHeight*DPR);
+    c.width = W; c.height = H;
+    c.style.width = innerWidth+"px";
+    c.style.height = innerHeight+"px";
+  };
+  addEventListener("resize", resize);
+  resize();
 
-    const kanjiChar = $("kanjiChar");
-    const qHint = $("qHint");
-    const qPrompt = $("qPrompt");
-    const answersEl = $("answers");
-    const timerTxt = $("timerTxt");
-    const timeBar = $("timeBar");
+  // ---------- Audio (procedural) ----------
+  let audioOn = false;
+  let ac=null, master=null;
+  const ensureAudio = ()=>{
+    if(ac) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ac = new AC();
+    master = ac.createGain();
+    master.gain.value = 0;
+    master.connect(ac.destination);
+  };
+  const setAudio = async (on)=>{
+    audioOn = on;
+    btnAudio.setAttribute("aria-pressed", String(on));
+    btnAudio.textContent = on ? "🔊 Som" : "🔇 Som";
+    if(on){
+      ensureAudio();
+      try{ await ac.resume(); }catch{}
+      master.gain.cancelScheduledValues(ac.currentTime);
+      master.gain.setTargetAtTime(0.14, ac.currentTime, 0.06);
+    }else if(master && ac){
+      master.gain.cancelScheduledValues(ac.currentTime);
+      master.gain.setTargetAtTime(0.0, ac.currentTime, 0.05);
+    }
+  };
+  const beep = (f=440, dur=0.08, type="sine", gain=0.12)=>{
+    if(!audioOn || !ac) return;
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const gn = ac.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f, t);
+    gn.gain.setValueAtTime(0.0001, t);
+    gn.gain.exponentialRampToValueAtTime(gain, t+0.01);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.connect(gn); gn.connect(master);
+    o.start(t); o.stop(t+dur+0.02);
+  };
+  const sfx = {
+    coin(){ beep(980,0.06,"triangle",0.10); beep(1320,0.05,"sine",0.08); },
+    power(){ beep(420,0.08,"square",0.08); beep(680,0.08,"triangle",0.08); },
+    hit(){ beep(160,0.12,"sawtooth",0.12); },
+    dash(){ beep(520,0.05,"triangle",0.08); },
+    start(){ beep(220,0.10,"square",0.08); beep(440,0.08,"triangle",0.08); }
+  };
 
-    const btnPause = $("btnPause");
-    const btnAudio = $("btnAudio");
-    const langSel = $("langSel");
+  // ---------- Game State ----------
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const lerp = (a,b,t)=>a+(b-a)*t;
+  const rand = (a,b)=>Math.random()*(b-a)+a;
+  const pick = (arr)=>arr[(Math.random()*arr.length)|0];
 
-    const ofudaN = $("ofudaN");
-    const smokeN = $("smokeN");
-    const itemOfuda = $("itemOfuda");
-    const itemSmoke = $("itemSmoke");
+  const LANES = 5;
+  let lane = 2; // 0..4
+  let laneX = 0; // smoothed
+  let running=false, paused=false, dead=false;
 
-    const toast = $("toast");
-    const toastTxt = $("toastTxt");
+  let score=0;
+  let mult=1.0;
+  let maxMult=1.0;
 
-    const bestEl = $("best");
-    const btnStart = $("btnStart");
-    const btnTutorial = $("btnTutorial");
-    const btnTutClose = $("btnTutClose");
-    const btnAgain = $("btnAgain");
-    const btnMenu = $("btnMenu");
+  let speed=1.0;      // increases
+  let dist=0;         // for spawn pacing
+  let tRun=0;
 
-    const btnReset = $("btnReset");
-    const btnCredits = $("btnCredits");
-    const btnDiff = $("btnDiff");
-    const btnTheme = $("btnTheme");
+  let shield=0;       // 0..1 (one hit) but with decay bar for display
+  let slow=0;         // seconds remaining
+  let dashT=0;        // invulnerability seconds
 
-    const diffTxt = $("diffTxt");
-    const themeTxt = $("themeTxt");
+  // Entities
+  const obstacles = [];
+  const items = []; // {type:"coin|shield|slow", lane, y, r}
 
-    const goScore = $("goScore");
-    const goBest = $("goBest");
-    const goAcc = $("goAcc");
-    const sumP = $("sumP");
-    const unlockP = $("unlockP");
-    const shareTxt = $("shareTxt");
+  // Background particles (neon rain + torii gates)
+  const rain = [];
+  const gates = [];
+  const initFX = ()=>{
+    rain.length=0; gates.length=0;
+    const n = Math.round((innerWidth*innerHeight)/24000);
+    for(let i=0;i<n;i++){
+      rain.push({x:Math.random(), y:Math.random(), v:rand(0.25,1.1), len:rand(0.02,0.08), w:rand(0.0006,0.0018), ho:rand(-40,60), a:rand(0.10,0.26)});
+    }
+    const m = Math.max(8, Math.floor(innerWidth/120));
+    for(let i=0;i<m;i++){
+      gates.push({lane:(Math.random()*LANES)|0, y:Math.random(), s:rand(0.15,0.35), wob:rand(0.6,1.5), seed:Math.random()*999});
+    }
+  };
+  initFX();
+  addEventListener("resize", initFX);
 
-    const tHeal = $("tHeal");
-    const tSkip = $("tSkip");
+  // Track geometry
+  const track = ()=>{
+    const pad = 20*DPR;
+    const trackW = Math.min(W*0.86, 820*DPR);
+    const trackH = H;
+    const x0 = (W-trackW)/2;
+    const x1 = x0 + trackW;
+    return {x0,x1,trackW,trackH,pad};
+  };
+  const laneCenterX = (ln)=>{
+    const {x0,trackW} = track();
+    const seg = trackW / LANES;
+    return x0 + seg*(ln+0.5);
+  };
 
-    // difficulty profiles
-    const DIFFS = [
-      {name:"Easy", baseTime: 11.5, enemyHP: 75, dmgIn: 9, dmgOut: 20, moonRate: 0.8},
-      {name:"Normal", baseTime: 10.0, enemyHP: 95, dmgIn: 12, dmgOut: 18, moonRate: 1.0},
-      {name:"Hard", baseTime: 8.8, enemyHP: 120, dmgIn: 14, dmgOut: 16, moonRate: 1.15},
-      {name:"Oni", baseTime: 7.6, enemyHP: 140, dmgIn: 16, dmgOut: 14, moonRate: 1.25},
-    ];
+  // Spawners
+  const spawnObstacle = ()=>{
+    const ln = (Math.random()*LANES)|0;
+    const kind = Math.random()<0.65 ? "barrier" : "block";
+    obstacles.push({
+      kind,
+      lane: ln,
+      y: -120*DPR,
+      w: (kind==="barrier") ? 0.74 : 0.86,
+      h: (kind==="barrier") ? 68 : 92,
+      blink: rand(0.8,1.8),
+      seed: Math.random()*999
+    });
+  };
+  const spawnItem = ()=>{
+    const ln = (Math.random()*LANES)|0;
+    const r = Math.random();
+    const type = (r<0.72) ? "coin" : (r<0.86 ? "shield" : "slow");
+    items.push({type, lane:ln, y:-90*DPR, r: 16*DPR});
+  };
 
-    // themes (just hue & ambiance)
-    const THEMES = [
-      {name:"Neon", hue:196},
-      {name:"Sakura", hue:318},
-      {name:"Kitsune", hue:38},
-      {name:"Abyss", hue:220},
-    ];
+  // Collision (lane-based with y threshold)
+  const collide = ()=>{
+    // player position
+    const px = laneCenterX(laneX);
+    const py = H*0.80;
+    const seg = track().trackW/LANES;
 
-    let lang = "pt";
-    let diffIdx = 1;
-    let themeIdx = 0;
+    // obstacles
+    for(let i=obstacles.length-1;i>=0;i--){
+      const o = obstacles[i];
+      const ox = laneCenterX(o.lane);
+      const oy = o.y;
+      const ow = seg*o.w;
+      const oh = o.h*DPR;
 
-    const persistKey = "yo-kanji-vampire-save-v1";
-    const loadSave = ()=>{
-      try{
-        const raw = localStorage.getItem(persistKey);
-        if(!raw) return null;
-        return JSON.parse(raw);
-      }catch{ return null; }
-    };
-    const saveGame = (data)=>{
-      try{ localStorage.setItem(persistKey, JSON.stringify(data)); }catch{}
-    };
-    const saved = loadSave() || {best:0, diffIdx:1, themeIdx:0, lang:"pt"};
-    diffIdx = Math.min(DIFFS.length-1, Math.max(0, saved.diffIdx ?? 1));
-    themeIdx = Math.min(THEMES.length-1, Math.max(0, saved.themeIdx ?? 0));
-    lang = (saved.lang || "pt");
-
-    let running = false;
-    let paused = false;
-
-    let score = 0;
-    let combo = 1;
-    let streak = 0;
-
-    let hp = 100;
-    let enemyHP = 100;
-    let enemyHPMax = 100;
-
-    let moon = 0;              // 0..100
-    let bloodMoon = false;
-    let bloodMoonT = 0;        // seconds remaining
-
-    let ofuda = 2;
-    let smoke = 1;
-
-    let curQ = null;
-    let qTime = 10.0;
-    let qTimeLeft = 10.0;
-
-    let totalQ = 0;
-    let correctQ = 0;
-
-    // boss rotation
-    const BOSSES = [
-      {nameJP:"影", nameEN:"Kage", aura:[80,200,255]},
-      {nameJP:"狐", nameEN:"Kitsune", aura:[255,180,60]},
-      {nameJP:"鬼", nameEN:"Oni", aura:[255,80,120]},
-      {nameJP:"黒翼", nameEN:"Koku-yoku", aura:[120,110,255]},
-    ];
-    let bossIdx = 0;
-
-    // ---------- audio (procedural) ----------
-    let audioOn = false;
-    let audioCtx = null;
-    let master = null;
-    let musicTimer = 0;
-    let musicStep = 0;
-
-    const ensureAudio = ()=>{
-      if(audioCtx) return;
-      const AC = window.AudioContext || window.webkitAudioContext;
-      audioCtx = new AC();
-      master = audioCtx.createGain();
-      master.gain.value = 0.0;
-      master.connect(audioCtx.destination);
-    };
-
-    const setAudio = async (on)=>{
-      audioOn = on;
-      btnAudio.setAttribute("aria-pressed", String(audioOn));
-      btnAudio.textContent = audioOn ? I18N[lang].soundOn : I18N[lang].soundOff;
-
-      if(audioOn){
-        ensureAudio();
-        try{ await audioCtx.resume(); }catch{}
-        // fade in
-        master.gain.cancelScheduledValues(audioCtx.currentTime);
-        master.gain.setTargetAtTime(0.14, audioCtx.currentTime, 0.06);
-      }else{
-        if(master && audioCtx){
-          master.gain.cancelScheduledValues(audioCtx.currentTime);
-          master.gain.setTargetAtTime(0.0, audioCtx.currentTime, 0.05);
+      const hitY = Math.abs(oy - py) < (oh*0.55 + 18*DPR);
+      const hitX = Math.abs(ox - px) < (ow*0.45 + 16*DPR);
+      if(hitX && hitY){
+        obstacles.splice(i,1);
+        if(dashT>0){
+          // dash ignores
+          return;
         }
-      }
-    };
-
-    const beep = (freq=440, dur=0.09, type="sine", gain=0.18)=>{
-      if(!audioOn || !audioCtx) return;
-      const t = audioCtx.currentTime;
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(gain, t+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-      o.connect(g); g.connect(master);
-      o.start(t);
-      o.stop(t+dur+0.02);
-    };
-
-    const hitSfx = (good=true)=>{
-      if(good){
-        beep(740, 0.07, "triangle", 0.16);
-        beep(1040,0.06, "sine", 0.10);
-      }else{
-        beep(190, 0.12, "sawtooth", 0.14);
-      }
-    };
-
-    const musicTick = (dt)=>{
-      if(!audioOn || !audioCtx) return;
-      musicTimer += dt;
-      const stepDur = bloodMoon ? 0.16 : 0.22;
-      if(musicTimer < stepDur) return;
-      musicTimer = 0;
-      musicStep++;
-
-      // minor-ish pentatonic
-      const base = bloodMoon ? 196 : 174; // F3-ish
-      const scale = [0,3,5,7,10,12]; // minor pent
-      const n1 = scale[musicStep % scale.length];
-      const n2 = scale[(musicStep+2) % scale.length];
-      const freq1 = base * Math.pow(2, n1/12);
-      const freq2 = base * Math.pow(2, n2/12);
-
-      beep(freq1, bloodMoon ? 0.06 : 0.07, "triangle", 0.08);
-      if(musicStep % 2 === 0) beep(freq2*2, 0.05, "sine", 0.05);
-      if(musicStep % 4 === 0) beep(base/2, 0.06, "square", 0.04);
-    };
-
-    // ---------- UI helpers ----------
-    const toastShow = (msg)=>{
-      toastTxt.textContent = msg;
-      toast.classList.add("show");
-      clearTimeout(toast._t);
-      toast._t = setTimeout(()=>toast.classList.remove("show"), 1200);
-    };
-
-    const setLang = (l)=>{
-      lang = l;
-      langSel.value = lang;
-
-      $("menuSub").textContent = I18N[lang].menuSub;
-      $("storyT").textContent = I18N[lang].storyT;
-      $("storyP").textContent = I18N[lang].storyP;
-      $("howT").textContent = I18N[lang].howT;
-      $("howP").textContent = I18N[lang].howP;
-      $("loreT").textContent = I18N[lang].loreT;
-      $("loreP").textContent = I18N[lang].loreP;
-      $("tipsT").textContent = I18N[lang].tipsT;
-      $("riskP").textContent = I18N[lang].riskP;
-
-      $("tutTitle").textContent = I18N[lang].tutorialTitle;
-      $("tutSub").textContent = I18N[lang].tutorialSub;
-
-      $("goTitle").textContent = I18N[lang].goTitle;
-      $("goSub").textContent = I18N[lang].goSub;
-      $("sumT").textContent = I18N[lang].sumT;
-      $("unlockT").textContent = I18N[lang].unlockT;
-
-      btnStart.textContent = I18N[lang].start;
-      btnTutorial.textContent = I18N[lang].tut;
-
-      btnPause.textContent = paused ? I18N[lang].resume : "⏸︎ Pausar";
-      if(paused) btnPause.textContent = I18N[lang].resume;
-
-      // update question labels
-      if(curQ) applyQuestionText(curQ);
-
-      // persist
-      const s = loadSave() || {best:0};
-      s.lang = lang;
-      s.diffIdx = diffIdx;
-      s.themeIdx = themeIdx;
-      saveGame(s);
-    };
-
-    const applyTheme = ()=>{
-      const theme = THEMES[themeIdx];
-      document.documentElement.style.setProperty("--hue", theme.hue);
-      themeTxt.textContent = theme.name;
-
-      const s = loadSave() || {best:0};
-      s.themeIdx = themeIdx;
-      s.diffIdx = diffIdx;
-      s.lang = lang;
-      saveGame(s);
-    };
-
-    const applyDiff = ()=>{
-      const d = DIFFS[diffIdx];
-      diffTxt.textContent = d.name;
-      const s = loadSave() || {best:0};
-      s.diffIdx = diffIdx;
-      s.themeIdx = themeIdx;
-      s.lang = lang;
-      saveGame(s);
-    };
-
-    const fmtPct = (x)=> (Math.round(x*10)/10).toFixed(1) + "%";
-
-    const clamp = (v,a,b)=>Math.max(a, Math.min(b, v));
-    const lerp = (a,b,t)=>a+(b-a)*t;
-
-    // ---------- questions ----------
-    const rand = (a,b)=>Math.random()*(b-a)+a;
-    const pick = (arr)=>arr[(Math.random()*arr.length)|0];
-    const shuffle = (arr)=>{
-      const a = arr.slice();
-      for(let i=a.length-1;i>0;i--){
-        const j = (Math.random()*(i+1))|0;
-        [a[i],a[j]]=[a[j],a[i]];
-      }
-      return a;
-    };
-
-    const getQuestionPool = ()=>{
-      // boss influences type
-      // Kage: read, Kitsune: mean, Oni: use, Koku-yoku: mixed
-      let t = "mixed";
-      if(bossIdx===0) t="read";
-      if(bossIdx===1) t="mean";
-      if(bossIdx===2) t="use";
-      if(bossIdx===3) t="mixed";
-
-      let pool = DB;
-      if(t!=="mixed") pool = DB.filter(x=>x.type===t);
-      // in Blood Moon, more "use" and mixed
-      if(bloodMoon){
-        const u = DB.filter(x=>x.type==="use");
-        const r = DB.filter(x=>x.type==="read");
-        const m = DB.filter(x=>x.type==="mean");
-        pool = shuffle([ ...u, ...u, ...r, ...m ]); // bias
-      }
-      return pool;
-    };
-
-    const nextQuestion = ()=>{
-      const d = DIFFS[diffIdx];
-      const pool = getQuestionPool();
-      curQ = pick(pool);
-
-      // build answers
-      const opts = shuffle(curQ.opts);
-      const correctIndex = opts.indexOf(curQ.ans);
-
-      // dynamic time
-      let base = d.baseTime;
-      base -= Math.min(2.2, (streak*0.08)); // streak faster
-      if(bloodMoon) base *= 0.82;
-      base = clamp(base, 4.7, 12.0);
-      qTime = base;
-      qTimeLeft = base;
-
-      curQ._opts = opts;
-      curQ._correctIndex = correctIndex;
-
-      renderAnswers();
-      applyQuestionText(curQ);
-    };
-
-    const applyQuestionText = (q)=>{
-      // hint/prompt depends on type
-      if(q.type==="read"){
-        qHint.textContent = I18N[lang].qHint_read;
-        qPrompt.textContent = I18N[lang].qPrompt_read;
-      }else if(q.type==="mean"){
-        qHint.textContent = I18N[lang].qHint_mean;
-        qPrompt.textContent = I18N[lang].qPrompt_mean;
-      }else{
-        qHint.textContent = I18N[lang].qHint_use;
-        qPrompt.textContent = I18N[lang].qPrompt_use + "  " + (q.sentence || "");
-      }
-      kanjiChar.textContent = q.k;
-    };
-
-    const renderAnswers = ()=>{
-      answersEl.innerHTML = "";
-      const keys = ["1","2","3","4"];
-      curQ._opts.forEach((opt,i)=>{
-        const div = document.createElement("div");
-        div.className = "ans";
-        div.tabIndex = 0;
-        div.setAttribute("role","button");
-        div.dataset.idx = String(i);
-        const k = document.createElement("div");
-        k.className = "k";
-        k.textContent = keys[i];
-        const t = document.createElement("div");
-        t.style.display = "flex";
-        t.style.flexDirection = "column";
-        t.style.gap = "2px";
-
-        const main = document.createElement("div");
-        main.className = "t";
-        main.textContent = opt;
-
-        const sub = document.createElement("div");
-        sub.className = "s";
-        // little flavor: show romanization for kana-ish (not perfect, just hinty)
-        sub.textContent = curQ.type==="read" ? kanaHint(opt) : (curQ.type==="use" ? "—" : "—");
-
-        t.appendChild(main);
-        t.appendChild(sub);
-
-        div.appendChild(k);
-        div.appendChild(t);
-
-        div.addEventListener("click", ()=>answer(i));
-        div.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" ") answer(i); });
-
-        answersEl.appendChild(div);
-      });
-    };
-
-    // lightweight kana hint (not full romaji)
-    const kanaHint = (s)=>{
-      // For immersion: display a pseudo-romaji for simple kana sequences
-      const map = {
-        "あ":"a","い":"i","う":"u","え":"e","お":"o",
-        "か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko",
-        "さ":"sa","し":"shi","す":"su","せ":"se","そ":"so",
-        "た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to",
-        "な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no",
-        "は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho",
-        "ま":"ma","み":"mi","む":"mu","め":"me","も":"mo",
-        "や":"ya","ゆ":"yu","よ":"yo",
-        "ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro",
-        "わ":"wa","ん":"n",
-        "が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go",
-        "ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po",
-        "ゃ":"ya","ゅ":"yu","ょ":"yo",
-        "ー":"-"
-      };
-      let out = "";
-      for(const ch of s){
-        out += (map[ch] ?? "");
-      }
-      return out ? out : "—";
-    };
-
-    // ---------- combat ----------
-    const updateBars = ()=>{
-      scoreEl.textContent = String(score|0);
-      comboEl.textContent = "x" + (combo|0);
-
-      hpBar.style.width = clamp(hp,0,100) + "%";
-      enemyBar.style.width = clamp((enemyHP/enemyHPMax)*100, 0, 100) + "%";
-      moonBar.style.width = clamp(moon,0,100) + "%";
-
-      ofudaN.textContent = String(ofuda);
-      smokeN.textContent = String(smoke);
-    };
-
-    const startRun = ()=>{
-      const d = DIFFS[diffIdx];
-
-      score = 0;
-      combo = 1;
-      streak = 0;
-
-      hp = 100;
-      bossIdx = 0;
-      enemyHPMax = d.enemyHP;
-      enemyHP = enemyHPMax;
-
-      moon = 0;
-      bloodMoon = false;
-      bloodMoonT = 0;
-
-      ofuda = 2;
-      smoke = 1;
-
-      totalQ = 0;
-      correctQ = 0;
-
-      paused = false;
-      running = true;
-
-      menu.classList.add("hidden");
-      tutorial.classList.add("hidden");
-      gameover.classList.add("hidden");
-
-      btnPause.textContent = "⏸︎ Pausar";
-      nextQuestion();
-      updateBars();
-      toastShow(lang==="jp" ? "夜が始まる…" : (lang==="en" ? "Night begins…" : "A noite começa…"));
-    };
-
-    const endRun = ()=>{
-      running = false;
-      paused = false;
-
-      const best = Math.max(savedBest(), score|0);
-      setBest(best);
-
-      const acc = totalQ>0 ? (correctQ/totalQ) : 0;
-      goScore.textContent = String(score|0);
-      goBest.textContent = String(best|0);
-      goAcc.textContent = fmtPct(acc*100);
-
-      const bossName = BOSSES[bossIdx]?.nameJP || "—";
-      sumP.textContent =
-        (lang==="jp")
-          ? `スコア${score|0}。正解${correctQ}/${totalQ}。最後のボス: ${bossName}。`
-          : (lang==="en")
-            ? `Score ${score|0}. Correct ${correctQ}/${totalQ}. Last boss: ${bossName}.`
-            : `Score ${score|0}. Acertos ${correctQ}/${totalQ}. Último boss: ${bossName}.`;
-
-      // achievements
-      const ach = [];
-      if(score>=1500) ach.push(lang==="jp"?"「夜の王」(1500+)":"Night King (1500+)");
-      if(streak>=18) ach.push(lang==="jp"?"「無傷の刃」(streak 18+)":"Clean Blade (streak 18+)");
-      if(acc>=0.85 && totalQ>=12) ach.push(lang==="jp"?"「知の契約」(85%+)":"Knowledge Pact (85%+)");
-      if(bloodMoon && moon<15) ach.push(lang==="jp"?"「血の月を支配」":"Blood Moon Tamer");
-
-      unlockP.textContent = ach.length ? ("• " + ach.join("\n• ")) : (lang==="jp" ? "今回はなし。" : (lang==="en" ? "None this run." : "Nenhuma nesta run."));
-
-      // share text
-      const msg = (lang==="jp")
-        ? `ヴァンパイア全知全能｜Score:${score|0}｜正解:${correctQ}/${totalQ}｜記録:${best|0}`
-        : (lang==="en")
-          ? `Vampire Omni｜Score:${score|0}｜Correct:${correctQ}/${totalQ}｜Best:${best|0}`
-          : `Vampiro Onisciente｜Score:${score|0}｜Acertos:${correctQ}/${totalQ}｜Recorde:${best|0}`;
-      shareTxt.textContent = msg;
-
-      gameover.classList.remove("hidden");
-    };
-
-    const dmgToEnemy = ()=>{
-      const d = DIFFS[diffIdx];
-      let dmg = d.dmgOut;
-      dmg *= (1 + (combo-1)*0.08); // combo scaling
-      if(bloodMoon) dmg *= 1.22;
-      return dmg;
-    };
-
-    const dmgToYou = ()=>{
-      const d = DIFFS[diffIdx];
-      let dmg = d.dmgIn;
-      dmg *= (bloodMoon ? 1.25 : 1.0);
-      return dmg;
-    };
-
-    const rotateBossIfNeeded = ()=>{
-      if(enemyHP > 0) return;
-      bossIdx = (bossIdx + 1) % BOSSES.length;
-
-      const d = DIFFS[diffIdx];
-      // scale enemyHP with progress + score
-      const scale = 1 + Math.min(0.55, (score/2000));
-      enemyHPMax = Math.round(d.enemyHP * scale);
-      enemyHP = enemyHPMax;
-
-      toastShow(lang==="jp" ? `ボス出現: ${BOSSES[bossIdx].nameJP}` : (lang==="en" ? `Boss appears: ${BOSSES[bossIdx].nameEN}` : `Boss: ${BOSSES[bossIdx].nameEN}`));
-    };
-
-    const answer = (idx)=>{
-      if(!running || paused) return;
-      if(!curQ) return;
-
-      totalQ++;
-
-      const correct = idx === curQ._correctIndex;
-      const ansNodes = [...answersEl.querySelectorAll(".ans")];
-      ansNodes.forEach((n,i)=>{
-        n.classList.toggle("good", i===curQ._correctIndex);
-        if(i===idx && !correct) n.classList.add("bad");
-        n.style.pointerEvents = "none";
-      });
-
-      if(correct){
-        correctQ++;
-        streak++;
-        combo = clamp(combo + 1, 1, 99);
-
-        const dmg = dmgToEnemy();
-        enemyHP -= dmg;
-        score += Math.round(50 + 18*combo + (bloodMoon? 40:0));
-
-        hitSfx(true);
-        toastShow(lang==="jp" ? "斬ッ！" : (lang==="en" ? "Hit!" : "Corte!"));
-
-        // night meter
-        const d = DIFFS[diffIdx];
-        moon += (8.0 * d.moonRate) * (bloodMoon ? 0.5 : 1.0);
-      }else{
-        streak = 0;
-        combo = 1;
-
-        const dmg = dmgToYou();
-        hp -= dmg;
-        score += Math.round(10 + (bloodMoon? 10:0));
-
-        hitSfx(false);
-        toastShow(lang==="jp" ? "痛ッ…" : (lang==="en" ? "Ouch…" : "Dói…"));
-
-        // night meter increases on mistakes too (panic)
-        moon += 6.0;
-      }
-
-      moon = clamp(moon, 0, 100);
-      updateBars();
-
-      // handle deaths
-      if(hp <= 0){
-        setTimeout(()=>endRun(), 550);
+        if(shield>0){
+          shield = 0;
+          sfx.hit();
+          return;
+        }
+        // dead
+        dead = true;
+        running = false;
+        paused = false;
+        sfx.hit();
+        endRun();
         return;
       }
+    }
 
-      // boss rotation
-      rotateBossIfNeeded();
-
-      // start blood moon if full
-      if(!bloodMoon && moon >= 100){
-        startBloodMoon();
-      }
-
-      setTimeout(()=>{
-        // reset answer styles
-        ansNodes.forEach(n=>{
-          n.classList.remove("good","bad");
-          n.style.pointerEvents = "";
-        });
-        nextQuestion();
-      }, 520);
-    };
-
-    const timeoutFail = ()=>{
-      if(!running || paused) return;
-      totalQ++;
-      streak = 0;
-      combo = 1;
-
-      hp -= dmgToYou();
-      moon = clamp(moon + 7.5, 0, 100);
-
-      hitSfx(false);
-      toastShow(lang==="jp" ? "時間切れ！" : (lang==="en" ? "Time!" : "Tempo!"));
-
-      updateBars();
-
-      if(hp <= 0){
-        setTimeout(()=>endRun(), 450);
-        return;
-      }
-
-      if(!bloodMoon && moon >= 100) startBloodMoon();
-
-      // show correct briefly
-      const ansNodes = [...answersEl.querySelectorAll(".ans")];
-      ansNodes.forEach((n,i)=>{
-        n.classList.toggle("good", i===curQ._correctIndex);
-        n.style.pointerEvents = "none";
-      });
-
-      setTimeout(()=>{
-        ansNodes.forEach(n=>{ n.classList.remove("good","bad"); n.style.pointerEvents=""; });
-        nextQuestion();
-      }, 520);
-    };
-
-    const startBloodMoon = ()=>{
-      bloodMoon = true;
-      bloodMoonT = 8.5; // seconds
-      moon = 100;
-      toastShow(lang==="jp" ? "🩸 Blood Moon" : "🩸 Blood Moon");
-      // reward: +1 smoke sometimes
-      if(Math.random() < 0.35) smoke++;
-      updateBars();
-      beep(98, 0.18, "sawtooth", 0.16);
-      beep(196,0.12, "square", 0.10);
-    };
-
-    const endBloodMoon = ()=>{
-      bloodMoon = false;
-      moon = 0;
-      toastShow(lang==="jp" ? "夜は続く…" : (lang==="en" ? "Night continues…" : "A noite continua…"));
-      updateBars();
-    };
-
-    const useHeal = ()=>{
-      if(!running || paused) return;
-      if(ofuda <= 0) { toastShow(lang==="jp"?"御札なし":"Sem ofuda"); return; }
-      if(hp >= 100) { toastShow(lang==="jp"?"HP満タン":"HP cheio"); return; }
-
-      ofuda--;
-      const heal = bloodMoon ? 22 : 28;
-      hp = clamp(hp + heal, 0, 100);
-
-      // small score penalty to avoid spam
-      score = Math.max(0, score - 20);
-
-      hitSfx(true);
-      toastShow(lang==="jp" ? "御札・回復" : (lang==="en" ? "Ofuda heal" : "Ofuda: cura"));
-      updateBars();
-    };
-
-    const useSkip = ()=>{
-      if(!running || paused) return;
-      if(smoke <= 0) { toastShow(lang==="jp"?"煙なし":"Sem fumaça"); return; }
-
-      smoke--;
-      combo = Math.max(1, Math.floor(combo*0.75));
-      streak = 0;
-      score = Math.max(0, score - 12);
-
-      toastShow(lang==="jp" ? "🌫️ 影遁" : (lang==="en" ? "🌫️ Smoke escape" : "🌫️ Fuga"));
-      updateBars();
-      nextQuestion();
-    };
-
-    // ---------- best score ----------
-    const savedBest = ()=> (loadSave()?.best ?? saved.best ?? 0) | 0;
-    const setBest = (b)=>{
-      const s = loadSave() || {best:0};
-      s.best = b|0;
-      s.diffIdx = diffIdx;
-      s.themeIdx = themeIdx;
-      s.lang = lang;
-      saveGame(s);
-      bestEl.textContent = String(b|0);
-    };
-
-    // ---------- pause ----------
-    const togglePause = ()=>{
-      if(!running) return;
-      paused = !paused;
-      btnPause.textContent = paused ? I18N[lang].resume : "⏸︎ Pausar";
-      toastShow(paused ? I18N[lang].pause : (lang==="jp"?"再開":"Voltou"));
-    };
-
-    // ---------- rendering / FX ----------
-    let W=0,H=0, DPR=1;
-    const resize = ()=>{
-      DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      W = Math.floor(window.innerWidth * DPR);
-      H = Math.floor(window.innerHeight * DPR);
-      canvas.width = W;
-      canvas.height = H;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
-    };
-    window.addEventListener("resize", resize);
-
-    // particles (neon rain)
-    const drops = [];
-    const initDrops = ()=>{
-      drops.length = 0;
-      const n = Math.round((window.innerWidth * window.innerHeight) / 22000);
-      for(let i=0;i<n;i++){
-        drops.push({
-          x: Math.random(),
-          y: Math.random(),
-          v: rand(0.25, 1.1),
-          len: rand(0.02, 0.08),
-          w: rand(0.0006, 0.0018),
-          hueOff: rand(-40, 60),
-          a: rand(0.12, 0.28)
-        });
-      }
-    };
-
-    // skyline elements
-    const towers = [];
-    const initTowers = ()=>{
-      towers.length = 0;
-      const n = Math.max(10, Math.floor(window.innerWidth/90));
-      for(let i=0;i<n;i++){
-        towers.push({
-          x: Math.random(),
-          w: rand(0.03, 0.09),
-          h: rand(0.12, 0.44),
-          flick: rand(0.2, 1.2),
-          seed: Math.random()*999
-        });
-      }
-    };
-
-    // Slash FX
-    const slashes = [];
-    const spawnSlash = (good=true)=>{
-      slashes.push({
-        t: 0,
-        good,
-        x: rand(0.2, 0.8),
-        y: rand(0.25, 0.65),
-        a: rand(-0.9, 0.9)
-      });
-    };
-
-    // ---------- loop ----------
-    let last = performance.now();
-    const loop = (now)=>{
-      const dt = Math.min(0.033, (now-last)/1000);
-      last = now;
-
-      draw(dt);
-
-      if(running && !paused){
-        // timer
-        qTimeLeft -= dt;
-        if(qTimeLeft <= 0){
-          qTimeLeft = 0;
-          timeoutFail();
-        }
-
-        // blood moon countdown
-        if(bloodMoon){
-          bloodMoonT -= dt;
-          // slowly drain moon
-          moon = clamp(moon - 10*dt, 0, 100);
-          if(bloodMoonT <= 0) endBloodMoon();
+    // items
+    for(let i=items.length-1;i>=0;i--){
+      const it = items[i];
+      const ix = laneCenterX(it.lane);
+      const iy = it.y;
+      const hitY = Math.abs(iy - py) < (it.r + 18*DPR);
+      const hitX = Math.abs(ix - px) < (it.r + 16*DPR);
+      if(hitX && hitY){
+        items.splice(i,1);
+        if(it.type==="coin"){
+          score += Math.round(18 * mult);
+          mult = clamp(mult + 0.06, 1.0, 6.0);
+          maxMult = Math.max(maxMult, mult);
+          sfx.coin();
+        }else if(it.type==="shield"){
+          shield = 1;
+          score += Math.round(35 * mult);
+          sfx.power();
         }else{
-          // night meter slowly decays
-          moon = clamp(moon - 2.2*dt, 0, 100);
-        }
-
-        // music
-        musicTick(dt);
-        updateBars();
-      }
-
-      requestAnimationFrame(loop);
-    };
-
-    const draw = (dt)=>{
-      ctx.clearRect(0,0,W,H);
-
-      // background gradient
-      const themeHue = THEMES[themeIdx].hue;
-      const t = performance.now()/1000;
-
-      // subtle vignette
-      const g = ctx.createRadialGradient(W*0.5,H*0.35, 0, W*0.5,H*0.55, Math.max(W,H)*0.7);
-      g.addColorStop(0, `hsla(${themeHue},90%,55%,${bloodMoon?0.11:0.08})`);
-      g.addColorStop(1, `rgba(0,0,0,0)`);
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,W,H);
-
-      // skyline
-      drawSkyline(themeHue, t);
-
-      // neon rain
-      drawRain(themeHue, dt);
-
-      // boss aura + moon
-      drawMoon(themeHue, t);
-
-      // slashes
-      drawSlashes(dt);
-
-      // pause text
-      if(paused && running){
-        ctx.save();
-        ctx.globalAlpha = 0.9;
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
-        ctx.fillRect(0,0,W,H);
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.font = `${Math.floor(44*DPR)}px ui-sans-serif, system-ui, sans-serif`;
-        ctx.textAlign = "center";
-        ctx.fillText(I18N[lang].pause, W/2, H/2);
-        ctx.restore();
-      }
-    };
-
-    const drawSkyline = (hue, t)=>{
-      const baseY = H*0.78;
-      ctx.save();
-      ctx.globalAlpha = 0.95;
-
-      // base fog
-      const fog = ctx.createLinearGradient(0, baseY-80*DPR, 0, H);
-      fog.addColorStop(0, "rgba(0,0,0,0)");
-      fog.addColorStop(1, "rgba(0,0,0,0.75)");
-      ctx.fillStyle = fog;
-      ctx.fillRect(0, baseY-80*DPR, W, H-(baseY-80*DPR));
-
-      // buildings
-      for(const b of towers){
-        const x = b.x * W;
-        const w = b.w * W;
-        const h = b.h * H;
-        const y = baseY - h;
-
-        ctx.fillStyle = "rgba(0,0,0,0.45)";
-        roundRect(ctx, x, y, w, h, 6*DPR);
-        ctx.fill();
-
-        // windows flicker
-        const colA = `hsla(${hue+20}, 90%, 60%, ${0.10 + 0.06*Math.sin(t*b.flick + b.seed)})`;
-        const colB = `hsla(${hue-30}, 90%, 60%, ${0.08 + 0.05*Math.cos(t*b.flick*0.8 + b.seed)})`;
-        ctx.fillStyle = (b.seed%1>0.5) ? colA : colB;
-
-        const cols = Math.max(2, Math.floor(w/(18*DPR)));
-        const rows = Math.max(3, Math.floor(h/(22*DPR)));
-        for(let i=0;i<cols;i++){
-          for(let j=0;j<rows;j++){
-            if(((i*13 + j*7 + (b.seed*100|0)) % 9) < 4) continue;
-            const wx = x + 6*DPR + i*(w-12*DPR)/cols;
-            const wy = y + 10*DPR + j*(h-18*DPR)/rows;
-            const ww = Math.max(2*DPR, (w/cols)*0.35);
-            const wh = Math.max(3*DPR, (h/rows)*0.28);
-            ctx.fillRect(wx, wy, ww, wh);
-          }
-        }
-
-        // neon sign
-        if((b.seed*10|0)%3===0){
-          const sy = y + h*rand(0.2,0.7);
-          const sx = x + w*rand(0.15,0.75);
-          ctx.strokeStyle = `hsla(${hue + (b.seed>0.5?60:-50)}, 92%, 62%, 0.55)`;
-          ctx.lineWidth = 2*DPR;
-          ctx.beginPath();
-          ctx.moveTo(sx, sy);
-          ctx.lineTo(sx, sy + 40*DPR);
-          ctx.stroke();
-
-          ctx.globalAlpha = 0.35;
-          ctx.lineWidth = 6*DPR;
-          ctx.stroke();
-          ctx.globalAlpha = 0.95;
+          slow = 4.2;
+          score += Math.round(28 * mult);
+          sfx.power();
         }
       }
+    }
+  };
 
-      // street glow
-      const street = ctx.createLinearGradient(0, baseY-10*DPR, 0, H);
-      street.addColorStop(0, `hsla(${hue},90%,55%,0.05)`);
-      street.addColorStop(1, "rgba(0,0,0,0.85)");
-      ctx.fillStyle = street;
-      ctx.fillRect(0, baseY-10*DPR, W, H-(baseY-10*DPR));
+  // Multiplicador “decai” se ficar sem ticket (pressão)
+  let multHeat=0;
+  const multDecay = (dt)=>{
+    multHeat += dt;
+    if(multHeat > 1.25){
+      multHeat = 0;
+      mult = lerp(mult, 1.0, 0.06);
+      if(mult < 1.02) mult = 1.0;
+    }
+  };
+  const multBoostWindow = ()=>{ multHeat = 0; };
 
-      ctx.restore();
-    };
+  // HUD updates
+  const hud = ()=>{
+    scoreEl.textContent = score|0;
+    multEl.textContent = "x" + (Math.round(mult*10)/10).toFixed(1);
+    bestEl.textContent = best|0;
+    spdEl.textContent = (Math.round(speed*10)/10).toFixed(1) + "x";
+    laneTxt.textContent = (Math.round(laneX)+1) + "/5";
+    shieldBar.style.width = (shield>0 ? 100 : 0) + "%";
+    slowBar.style.width = clamp((slow/4.2)*100,0,100) + "%";
+  };
 
-    const drawRain = (hue, dt)=>{
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-      for(const d of drops){
-        d.y += dt * d.v * (bloodMoon ? 1.35 : 1.0);
-        if(d.y > 1.2){
-          d.y = -0.2;
-          d.x = Math.random();
-        }
-        const x = d.x * W;
-        const y = d.y * H;
-        const len = d.len * H;
-        const w = Math.max(1, d.w * W);
+  // ---------- Game flow ----------
+  const resetRun = ()=>{
+    lane = 2;
+    laneX = 2;
+    score = 0;
+    mult = 1.0;
+    maxMult = 1.0;
+    speed = 1.0;
+    dist = 0;
+    tRun = 0;
+    shield = 0;
+    slow = 0;
+    dashT = 0;
+    obstacles.length=0;
+    items.length=0;
+    dead=false;
+    hud();
+  };
 
-        ctx.strokeStyle = `hsla(${hue + d.hueOff}, 92%, 62%, ${d.a})`;
-        ctx.lineWidth = w;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(x, y + len);
-        ctx.stroke();
+  const startRun = ()=>{
+    resetRun();
+    menu.classList.add("hidden");
+    over.classList.add("hidden");
+    running = true;
+    paused = false;
+    btnPause.textContent = "⏸︎ Pausar";
+    sfx.start();
+  };
+
+  const endRun = ()=>{
+    // best
+    best = Math.max(best, score|0);
+    save({best, theme});
+
+    const sec = Math.max(0, tRun);
+    oScore.textContent = score|0;
+    oBest.textContent = best|0;
+    oMult.textContent = "x" + (Math.round(maxMult*10)/10).toFixed(1);
+    oTime.textContent = Math.round(sec) + "s";
+
+    sum.textContent = `Você durou ${Math.round(sec)}s. Max mult ${ (Math.round(maxMult*10)/10).toFixed(1) }x. Velocidade final ${(Math.round(speed*10)/10).toFixed(1)}x.`;
+    share.textContent = `新幹線ネオンラン | Score:${score|0} | Best:${best|0} | MaxMult:x${(Math.round(maxMult*10)/10).toFixed(1)} | Time:${Math.round(sec)}s`;
+
+    over.classList.remove("hidden");
+  };
+
+  const togglePause = ()=>{
+    if(!running && !paused) return;
+    paused = !paused;
+    btnPause.textContent = paused ? "▶︎ Voltar" : "⏸︎ Pausar";
+  };
+
+  // Dash: micro-invuln
+  const dash = ()=>{
+    if(!running || paused) return;
+    if(dashT>0) return;
+    dashT = 0.22; // invuln
+    sfx.dash();
+    // tiny score for skill
+    score += Math.round(6 * mult);
+  };
+
+  // Lane change
+  const moveLane = (dir)=>{
+    if(!running || paused) return;
+    lane = clamp(lane + dir, 0, LANES-1);
+  };
+
+  // ---------- Inputs ----------
+  addEventListener("keydown",(e)=>{
+    const k = e.key.toLowerCase();
+    if(k==="p"){ togglePause(); return; }
+    if(k==="m"){ setAudio(!audioOn); return; }
+    if(k==="r"){ startRun(); return; }
+    if(k===" "){ dash(); return; }
+    if(!running || paused) return;
+    if(k==="arrowleft" || k==="a") moveLane(-1);
+    if(k==="arrowright" || k==="d") moveLane(+1);
+  });
+
+  btnPause.addEventListener("click", togglePause);
+  btnAudio.addEventListener("click", ()=>setAudio(!audioOn));
+  btnRestart.addEventListener("click", startRun);
+  btnStart.addEventListener("click", startRun);
+  btnAgain.addEventListener("click", startRun);
+  btnBack.addEventListener("click", ()=>{
+    over.classList.add("hidden");
+    menu.classList.remove("hidden");
+  });
+  btnTheme.addEventListener("click", ()=>{
+    theme = (theme+1)%THEMES.length;
+    applyTheme();
+  });
+
+  tLeft.addEventListener("click", ()=>moveLane(-1));
+  tRight.addEventListener("click", ()=>moveLane(+1));
+  tDash.addEventListener("click", dash);
+
+  // Swipe controls
+  let touchX=0, touchY=0, touching=false;
+  c.addEventListener("touchstart",(e)=>{
+    const t = e.touches[0];
+    touchX = t.clientX; touchY = t.clientY; touching=true;
+  }, {passive:true});
+  c.addEventListener("touchmove",(e)=>{
+    if(!touching) return;
+    const t = e.touches[0];
+    const dx = t.clientX - touchX;
+    const dy = t.clientY - touchY;
+    // horizontal swipe to change lane
+    if(Math.abs(dx) > 28 && Math.abs(dx) > Math.abs(dy)){
+      moveLane(dx>0 ? +1 : -1);
+      touchX = t.clientX; touchY = t.clientY;
+    }
+    // vertical swipe up => dash
+    if(dy < -50 && Math.abs(dy) > Math.abs(dx)+12){
+      dash();
+      touchX = t.clientX; touchY = t.clientY;
+    }
+  }, {passive:true});
+  c.addEventListener("touchend",()=>touching=false,{passive:true});
+
+  // ---------- Drawing ----------
+  const roundRect = (ctx,x,y,w,h,r)=>{
+    const rr = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+rr,y);
+    ctx.arcTo(x+w,y, x+w,y+h, rr);
+    ctx.arcTo(x+w,y+h, x,y+h, rr);
+    ctx.arcTo(x,y+h, x,y, rr);
+    ctx.arcTo(x,y, x+w,y, rr);
+    ctx.closePath();
+  };
+
+  const drawTrack = (t)=>{
+    const {x0,x1,trackW} = track();
+    const y0 = 0, y1 = H;
+
+    // track base
+    g.save();
+    g.globalAlpha = 1;
+    const bg = g.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0, "rgba(0,0,0,0.20)");
+    bg.addColorStop(1, "rgba(0,0,0,0.62)");
+    g.fillStyle = bg;
+    roundRect(g, x0, y0-40*DPR, trackW, H+80*DPR, 26*DPR);
+    g.fill();
+
+    // lane lines
+    const seg = trackW/LANES;
+    for(let i=1;i<LANES;i++){
+      const x = x0 + seg*i;
+      g.strokeStyle = `rgba(255,255,255,0.10)`;
+      g.lineWidth = 2*DPR;
+      g.setLineDash([12*DPR, 18*DPR]);
+      g.lineDashOffset = -t*180*DPR*(0.7+speed*0.2);
+      g.beginPath();
+      g.moveTo(x, y0);
+      g.lineTo(x, y1);
+      g.stroke();
+    }
+    g.setLineDash([]);
+
+    // neon edges
+    g.globalCompositeOperation = "lighter";
+    g.strokeStyle = `hsla(${THEMES[theme].hue}, 92%, 60%, 0.25)`;
+    g.lineWidth = 4*DPR;
+    roundRect(g, x0, y0-40*DPR, trackW, H+80*DPR, 26*DPR);
+    g.stroke();
+
+    g.restore();
+  };
+
+  const drawRain = (dt)=>{
+    const hue = THEMES[theme].hue;
+    g.save();
+    g.globalCompositeOperation = "lighter";
+    for(const d of rain){
+      d.y += dt * d.v * (0.9 + speed*0.4);
+      if(d.y > 1.2){ d.y = -0.2; d.x = Math.random(); }
+      const x = d.x * W;
+      const y = d.y * H;
+      const len = d.len * H;
+      const w = Math.max(1, d.w * W);
+      g.strokeStyle = `hsla(${hue + d.ho},92%,62%,${d.a})`;
+      g.lineWidth = w;
+      g.beginPath();
+      g.moveTo(x, y);
+      g.lineTo(x, y + len);
+      g.stroke();
+    }
+    g.restore();
+  };
+
+  const drawTorii = (t, dt)=>{
+    const hue = THEMES[theme].hue;
+    const {x0,trackW} = track();
+    const seg = trackW/LANES;
+
+    g.save();
+    g.globalAlpha = 0.85;
+
+    for(const gate of gates){
+      gate.y += dt * (0.18 + speed*0.18);
+      if(gate.y > 1.25){
+        gate.y = -0.25;
+        gate.lane = (Math.random()*LANES)|0;
+        gate.s = rand(0.14,0.34);
+        gate.seed = Math.random()*999;
       }
-      ctx.restore();
-    };
+      const depth = 1 - gate.y; // near bottom smaller alpha
+      const scale = gate.s * (0.55 + (1-depth)*0.75);
+      const cx = x0 + seg*(gate.lane+0.5);
+      const yy = gate.y * H;
 
-    const drawMoon = (hue, t)=>{
-      ctx.save();
-      const mx = W*0.82;
-      const my = H*0.18;
-      const r = Math.min(W,H)*0.10;
+      const w = seg * 0.95 * scale;
+      const h = (110*DPR) * scale;
 
-      // moon glow
-      const moonCol = bloodMoon ? `hsla(${hue+140}, 92%, 62%, 0.22)` : `hsla(${hue+10}, 92%, 62%, 0.12)`;
-      const mg = ctx.createRadialGradient(mx,my, 0, mx,my, r*2.0);
-      mg.addColorStop(0, moonCol);
-      mg.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = mg;
-      ctx.fillRect(mx-r*2,my-r*2, r*4, r*4);
+      const wob = Math.sin(t*gate.wob + gate.seed)*2*DPR*scale;
 
-      // moon disk
-      ctx.globalAlpha = 0.85;
-      ctx.fillStyle = bloodMoon ? "rgba(255,120,150,0.45)" : "rgba(200,230,255,0.22)";
-      ctx.beginPath();
-      ctx.arc(mx,my,r,0,Math.PI*2);
-      ctx.fill();
+      // frame
+      g.fillStyle = `rgba(0,0,0,0.22)`;
+      roundRect(g, cx-w/2, yy-h/2, w, h, 10*DPR*scale);
+      g.fill();
 
-      // boss aura ring
-      const boss = BOSSES[bossIdx];
-      const a = 0.12 + 0.08*Math.sin(t*2.1);
-      ctx.globalAlpha = a;
-      ctx.strokeStyle = bloodMoon ? "rgba(255,90,130,0.55)" : `hsla(${hue+30}, 92%, 62%, 0.55)`;
-      ctx.lineWidth = 3*DPR;
-      ctx.beginPath();
-      ctx.arc(mx,my, r*1.25, 0, Math.PI*2);
-      ctx.stroke();
+      // neon outline
+      g.globalCompositeOperation = "lighter";
+      const a = 0.10 + 0.08*(1-depth);
+      g.strokeStyle = `hsla(${hue + 60}, 92%, 62%, ${a})`;
+      g.lineWidth = 3*DPR*scale;
+      roundRect(g, cx-w/2 + wob, yy-h/2, w, h, 10*DPR*scale);
+      g.stroke();
+      g.globalCompositeOperation = "source-over";
+    }
 
-      // boss glyph near center
-      ctx.globalAlpha = 0.75;
-      ctx.fillStyle = bloodMoon ? "rgba(255,190,210,0.65)" : "rgba(255,255,255,0.55)";
-      ctx.font = `${Math.floor(28*DPR)}px "Noto Sans JP", ui-sans-serif, system-ui`;
-      ctx.textAlign = "center";
-      ctx.fillText(boss.nameJP, mx, my + 10*DPR);
+    g.restore();
+  };
 
-      ctx.restore();
-    };
+  const drawPlayer = (t)=>{
+    const {trackW,x0} = track();
+    const seg = trackW/LANES;
+    const px = laneCenterX(laneX);
+    const py = H*0.80;
 
-    const drawSlashes = (dt)=>{
-      ctx.save();
-      ctx.globalCompositeOperation = "lighter";
-      for(let i=slashes.length-1;i>=0;i--){
-        const s = slashes[i];
-        s.t += dt * (bloodMoon ? 1.6 : 1.2);
-        const life = 0.45;
-        const p = s.t / life;
-        if(p>=1){ slashes.splice(i,1); continue; }
+    const w = seg*0.62;
+    const h = 92*DPR;
 
-        const x = s.x * W;
-        const y = s.y * H;
-        const len = lerp(40, 260, p) * DPR;
-        const ang = s.a + lerp(-0.25, 0.25, Math.sin(p*Math.PI));
-        const dx = Math.cos(ang)*len;
-        const dy = Math.sin(ang)*len;
+    // glow trail
+    g.save();
+    g.globalCompositeOperation = "lighter";
+    const hue = THEMES[theme].hue;
+    const glowA = dashT>0 ? 0.32 : 0.18;
+    const gr = g.createRadialGradient(px,py,0, px,py, 180*DPR);
+    gr.addColorStop(0, `hsla(${hue},92%,62%,${glowA})`);
+    gr.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = gr;
+    g.fillRect(px-220*DPR, py-220*DPR, 440*DPR, 440*DPR);
 
-        const alpha = (1-p) * 0.65;
-        ctx.strokeStyle = s.good
-          ? `rgba(80,255,200,${alpha})`
-          : `rgba(255,110,150,${alpha})`;
-        ctx.lineWidth = lerp(8,2,p)*DPR;
-        ctx.beginPath();
-        ctx.moveTo(x-dx*0.5, y-dy*0.5);
-        ctx.lineTo(x+dx*0.5, y+dy*0.5);
-        ctx.stroke();
+    // train body
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "rgba(255,255,255,0.10)";
+    roundRect(g, px-w/2, py-h/2, w, h, 18*DPR);
+    g.fill();
 
-        ctx.globalAlpha = 0.25*(1-p);
-        ctx.lineWidth *= 2.2;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+    // cockpit stripe
+    g.fillStyle = `hsla(${hue+10}, 92%, 62%, 0.32)`;
+    roundRect(g, px-w*0.26, py-h*0.20, w*0.52, h*0.52, 14*DPR);
+    g.fill();
+
+    // nose light
+    g.globalCompositeOperation = "lighter";
+    g.fillStyle = `hsla(${hue+40}, 92%, 62%, ${dashT>0 ? 0.60 : 0.40})`;
+    g.beginPath();
+    g.arc(px, py-h*0.34, 10*DPR, 0, Math.PI*2);
+    g.fill();
+
+    // shield ring
+    if(shield>0){
+      g.strokeStyle = "rgba(52,211,153,0.55)";
+      g.lineWidth = 3*DPR;
+      g.beginPath();
+      g.arc(px, py, 48*DPR, 0, Math.PI*2);
+      g.stroke();
+    }
+
+    // dash ring
+    if(dashT>0){
+      const p = dashT/0.22;
+      g.strokeStyle = `rgba(251,191,36,${0.55*p})`;
+      g.lineWidth = 4*DPR;
+      g.beginPath();
+      g.arc(px, py, 64*DPR*(1.0+(1-p)*0.35), 0, Math.PI*2);
+      g.stroke();
+    }
+
+    g.restore();
+  };
+
+  const drawObstacles = (t, dt)=>{
+    const hue = THEMES[theme].hue;
+    const {trackW} = track();
+    const seg = trackW/LANES;
+
+    for(let i=obstacles.length-1;i>=0;i--){
+      const o = obstacles[i];
+      o.y += (260*DPR) * dt * speed * (slow>0 ? 0.55 : 1.0);
+      if(o.y > H + 140*DPR){
+        obstacles.splice(i,1);
+        // reward: passou risco sem bater
+        score += Math.round(6 * mult);
+        continue;
       }
-      ctx.restore();
-    };
+      const x = laneCenterX(o.lane);
+      const w = seg*o.w;
+      const h = o.h*DPR;
 
-    const roundRect = (c,x,y,w,h,r)=>{
-      const rr = Math.min(r, w/2, h/2);
-      c.beginPath();
-      c.moveTo(x+rr,y);
-      c.arcTo(x+w,y, x+w,y+h, rr);
-      c.arcTo(x+w,y+h, x,y+h, rr);
-      c.arcTo(x,y+h, x,y, rr);
-      c.arcTo(x,y, x+w,y, rr);
-      c.closePath();
-    };
+      g.save();
+      g.fillStyle = "rgba(0,0,0,0.30)";
+      roundRect(g, x-w/2, o.y-h/2, w, h, 16*DPR);
+      g.fill();
 
-    // ---------- inputs ----------
-    window.addEventListener("keydown",(e)=>{
-      const k = e.key.toLowerCase();
-      if(k==="p"){ togglePause(); return; }
-      if(k==="m"){ setAudio(!audioOn); return; }
-      if(k==="h"){ useHeal(); return; }
-      if(k==="j"){ useSkip(); return; }
+      g.globalCompositeOperation = "lighter";
+      const a = 0.16 + 0.10*Math.sin(t*o.blink + o.seed);
+      g.strokeStyle = `hsla(${hue + (o.kind==="barrier"?140:20)}, 92%, 62%, ${a})`;
+      g.lineWidth = 3*DPR;
+      roundRect(g, x-w/2, o.y-h/2, w, h, 16*DPR);
+      g.stroke();
 
-      if(!running || paused) return;
-      if(k==="1") answer(0);
-      if(k==="2") answer(1);
-      if(k==="3") answer(2);
-      if(k==="4") answer(3);
-    });
+      // symbol
+      g.globalCompositeOperation = "source-over";
+      g.fillStyle = "rgba(255,255,255,0.58)";
+      g.font = `${Math.floor(20*DPR)}px "Noto Sans JP", ui-sans-serif`;
+      g.textAlign = "center";
+      g.fillText(o.kind==="barrier" ? "🚧" : "⛔", x, o.y + 7*DPR);
 
-    // touch buttons
-    tHeal.addEventListener("click", useHeal);
-    tSkip.addEventListener("click", useSkip);
+      g.restore();
+    }
+  };
 
-    // item chips
-    itemOfuda.addEventListener("click", useHeal);
-    itemSmoke.addEventListener("click", useSkip);
+  const drawItems = (t, dt)=>{
+    const hue = THEMES[theme].hue;
+    for(let i=items.length-1;i>=0;i--){
+      const it = items[i];
+      it.y += (240*DPR) * dt * speed * (slow>0 ? 0.55 : 1.0);
+      if(it.y > H + 120*DPR){
+        items.splice(i,1);
+        continue;
+      }
+      const x = laneCenterX(it.lane);
+      const y = it.y;
 
-    // answer click FX: spawn slash on any answer
-    answersEl.addEventListener("click",(e)=>{
-      const node = e.target.closest(".ans");
-      if(!node) return;
-      const idx = Number(node.dataset.idx||0);
-      const good = curQ ? (idx===curQ._correctIndex) : true;
-      spawnSlash(good);
-    });
+      g.save();
+      g.globalCompositeOperation = "lighter";
+      const glow = g.createRadialGradient(x,y,0, x,y, 70*DPR);
+      const col = it.type==="coin" ? `hsla(${hue+20},92%,62%,0.20)`
+                : it.type==="shield" ? "rgba(52,211,153,0.20)"
+                : "rgba(251,191,36,0.18)";
+      glow.addColorStop(0, col);
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = glow;
+      g.fillRect(x-90*DPR, y-90*DPR, 180*DPR, 180*DPR);
 
-    // buttons
-    btnPause.addEventListener("click", togglePause);
-    btnAudio.addEventListener("click", ()=>setAudio(!audioOn));
-    langSel.addEventListener("change", (e)=>setLang(e.target.value));
+      g.globalCompositeOperation = "source-over";
+      g.fillStyle = "rgba(255,255,255,0.10)";
+      g.beginPath(); g.arc(x,y, 22*DPR, 0, Math.PI*2); g.fill();
 
-    btnStart.addEventListener("click", ()=>startRun());
-    btnAgain.addEventListener("click", ()=>startRun());
-    btnMenu.addEventListener("click", ()=>{
-      gameover.classList.add("hidden");
-      menu.classList.remove("hidden");
-    });
+      g.fillStyle = "rgba(255,255,255,0.80)";
+      g.font = `${Math.floor(18*DPR)}px ui-sans-serif`;
+      g.textAlign = "center";
+      g.fillText(it.type==="coin" ? "🎫" : (it.type==="shield" ? "🛡️" : "⏳"), x, y + 6*DPR);
 
-    btnTutorial.addEventListener("click", ()=>{
-      tutorial.classList.remove("hidden");
-    });
-    btnTutClose.addEventListener("click", ()=>tutorial.classList.add("hidden"));
+      g.restore();
+    }
+  };
 
-    btnReset.addEventListener("click", ()=>{
-      setBest(0);
-      toastShow(lang==="jp" ? "記録リセット" : (lang==="en" ? "Best reset" : "Recorde resetado"));
-    });
+  const drawVignette = ()=>{
+    g.save();
+    const vg = g.createRadialGradient(W*0.5,H*0.45,0, W*0.5,H*0.55, Math.max(W,H)*0.7);
+    vg.addColorStop(0, `rgba(0,0,0,0)`);
+    vg.addColorStop(1, `rgba(0,0,0,0.55)`);
+    g.fillStyle = vg;
+    g.fillRect(0,0,W,H);
+    g.restore();
+  };
 
-    btnCredits.addEventListener("click", ()=>{
-      alert("ヴァンパイア全知全能 — 夜の漢字バトル\nSingle-file game (no deps)\n© Você + ChatGPT\n\nDica: edite o DB no código para adicionar mais kanji/frases.");
-    });
+  const drawPaused = ()=>{
+    g.save();
+    g.globalAlpha = 0.88;
+    g.fillStyle = "rgba(0,0,0,0.35)";
+    g.fillRect(0,0,W,H);
+    g.fillStyle = "rgba(255,255,255,0.85)";
+    g.font = `${Math.floor(44*DPR)}px ui-sans-serif`;
+    g.textAlign = "center";
+    g.fillText("⏸︎ PAUSADO", W/2, H/2);
+    g.restore();
+  };
 
-    btnDiff.addEventListener("click", ()=>{
-      diffIdx = (diffIdx + 1) % DIFFS.length;
-      applyDiff();
-      toastShow(lang==="jp" ? `難易度: ${DIFFS[diffIdx].name}` : `Dificuldade: ${DIFFS[diffIdx].name}`);
-    });
+  // ---------- Music tick (ambient) ----------
+  let musicT=0, step=0;
+  const music = (dt)=>{
+    if(!audioOn || !ac) return;
+    musicT += dt;
+    const stepDur = (slow>0 ? 0.26 : 0.22) / (0.95 + speed*0.06);
+    if(musicT < stepDur) return;
+    musicT = 0; step++;
 
-    btnTheme.addEventListener("click", ()=>{
-      themeIdx = (themeIdx + 1) % THEMES.length;
-      applyTheme();
-      toastShow(lang==="jp" ? `テーマ: ${THEMES[themeIdx].name}` : `Tema: ${THEMES[themeIdx].name}`);
-    });
+    const base = 164 + (speed*8); // slight rise
+    const scale = [0,3,5,7,10,12];
+    const n = scale[step % scale.length];
+    const n2 = scale[(step+2)%scale.length];
 
-    // ---------- init ----------
-    const init = ()=>{
-      resize();
-      initDrops();
-      initTowers();
+    const f1 = base * Math.pow(2, n/12);
+    const f2 = base * Math.pow(2, n2/12);
 
-      // show best
-      bestEl.textContent = String(savedBest());
-      applyDiff();
-      applyTheme();
-      setLang(lang);
+    beep(f1, 0.06, "triangle", 0.06);
+    if(step%2===0) beep(f2*2, 0.05, "sine", 0.04);
+    if(step%4===0) beep(base/2, 0.06, "square", 0.03);
+  };
 
-      // default audio off; keep UI consistent
-      btnAudio.textContent = I18N[lang].soundOff;
-      btnAudio.setAttribute("aria-pressed","false");
+  // ---------- Loop ----------
+  let last = performance.now();
+  const loop = (now)=>{
+    const dt = Math.min(0.033, (now-last)/1000);
+    last = now;
 
-      // start loop
-      requestAnimationFrame(loop);
-    };
+    // background always
+    const t = now/1000;
 
-    // small polish: click anywhere on menu to allow audio resume on mobile after user gesture
-    menu.addEventListener("click", ()=>{
-      if(!audioCtx) return;
-      audioCtx.resume().catch(()=>{});
-    });
+    // clear
+    g.clearRect(0,0,W,H);
 
-    // keep rain & towers in sync with screen changes
-    window.addEventListener("resize", ()=>{
-      initDrops();
-      initTowers();
-    });
+    // FX
+    drawRain(dt);
+    drawTorii(t, dt);
+    drawTrack(t);
 
-    init();
-  </script>
+    // gameplay
+    if(running && !paused){
+      tRun += dt;
+
+      // speed ramps
+      speed += dt*0.035;
+      if(score>600) speed += dt*0.010;
+      if(score>1200) speed += dt*0.012;
+
+      // slow time countdown
+      if(slow>0) slow = Math.max(0, slow - dt);
+
+      // dash countdown
+      if(dashT>0) dashT = Math.max(0, dashT - dt);
+
+      // smooth lane
+      laneX = lerp(laneX, lane, 1 - Math.pow(0.001, dt));
+
+      // spawn pacing
+      dist += dt * speed * (slow>0 ? 0.55 : 1.0);
+
+      // obstacles spawn: increases with speed
+      const obstEvery = clamp(1.05 - speed*0.08, 0.48, 0.95);
+      if(dist > obstEvery){
+        dist = 0;
+        spawnObstacle();
+        if(Math.random() < 0.55) spawnObstacle();
+        // items sometimes
+        if(Math.random() < 0.75) spawnItem();
+      }
+
+      // mult decay pressure
+      multDecay(dt);
+
+      // draw + update entities
+      drawItems(t, dt);
+      drawObstacles(t, dt);
+
+      // collisions
+      collide();
+
+      // bonus: if you collect anything, reset decay window
+      // (we detect by bumping multHeat on coin; simplest: coin sfx implies coin, but not tracked)
+      // We'll approximate: whenever items are few, don't decay too hard:
+      if(items.length > 0) multBoostWindow();
+
+      // HUD
+      hud();
+
+      // music
+      music(dt);
+    }else{
+      // still draw entities for atmosphere if menu open
+      // (no movement for obstacles/items when not running)
+      drawItems(t, 0);
+      drawObstacles(t, 0);
+      laneX = lerp(laneX, lane, 1 - Math.pow(0.001, dt));
+      hud();
+    }
+
+    // player always
+    drawPlayer(t);
+
+    // vignette
+    drawVignette();
+
+    // paused overlay
+    if(paused && running) drawPaused();
+
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+
+  // init HUD
+  bestEl.textContent = best|0;
+  hud();
+
+  // enable audio on mobile after gesture
+  menu.addEventListener("click", ()=>{ if(ac) ac.resume().catch(()=>{}); });
+
+})();
+</script>
 </body>
 </html>
