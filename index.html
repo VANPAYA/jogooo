@@ -3,18 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>日本語テキストラボ — N5/N4 (Análise linha a linha)</title>
+  <title>日本語テキストラボ — N5 / N4</title>
 
   <style>
     :root{
       --bg0:#070A10;
       --bg1:#0B1220;
       --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.085);
       --stroke: rgba(255,255,255,.14);
       --text:#EAF0FF;
       --muted: rgba(234,240,255,.70);
-      --muted2: rgba(234,240,255,.55);
 
       --hue: 200; /* muda com JS */
       --a1: hsl(calc(var(--hue) + 10) 90% 62%);
@@ -29,7 +27,7 @@
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
       --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", var(--sans);
 
-      --fontScale: 1; /* controlado via JS */
+      --fontScale: 1;
     }
 
     *{box-sizing:border-box}
@@ -45,7 +43,6 @@
       overflow:hidden;
     }
 
-    /* Animated glow "aurora" */
     .aurora{
       position:fixed; inset:-20%;
       background:
@@ -71,7 +68,6 @@
       100% { transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
     }
 
-    /* Layout */
     .app{
       position:relative;
       height:100%;
@@ -144,7 +140,7 @@
       min-width: 0;
     }
     .brandTitle .name{
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: .3px;
       font-size: 14px;
       line-height: 1.1;
@@ -174,6 +170,33 @@
       white-space:nowrap;
     }
 
+    .content{
+      padding: 14px 14px 16px;
+      overflow:auto;
+      min-height: 0;
+    }
+
+    .row{ display:flex; gap: 10px; align-items:center; flex-wrap:wrap; }
+    .col{ display:flex; flex-direction:column; gap: 10px; }
+
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .app{ grid-template-columns: 1fr; height:auto; overflow:visible; }
+    }
+
+    .input, .select, .textarea{
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 13px;
+    }
+    .textarea{ min-height: 110px; resize: vertical; font-family: var(--mono); }
+    .input::placeholder,.textarea::placeholder{ color: rgba(234,240,255,.40); }
+
     .btn{
       cursor:pointer;
       border: 1px solid rgba(255,255,255,.14);
@@ -181,7 +204,7 @@
       color: var(--text);
       padding: 10px 12px;
       border-radius: 12px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 12px;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
       display:inline-flex;
@@ -207,55 +230,33 @@
       pointer-events:none;
     }
 
-    .btnAccent{
-      border-color: rgba(255,255,255,.20);
-      background: linear-gradient(135deg, rgba(0,0,0,.22), rgba(0,0,0,.10));
-      box-shadow: 0 10px 28px rgba(0,0,0,.35);
-      position:relative;
-      overflow:hidden;
-    }
-    .btnAccent::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: linear-gradient(135deg, rgba(0,0,0,0), rgba(255,255,255,.12), rgba(0,0,0,0));
-      opacity:.35;
-      filter: blur(6px);
-      pointer-events:none;
-    }
-    .btnAccent strong{
-      background: linear-gradient(90deg, var(--a1), var(--a3));
-      -webkit-background-clip:text;
-      background-clip:text;
-      color: transparent;
-    }
-
-    .content{
-      padding: 14px 14px 16px;
-      overflow:auto;
-      min-height: 0;
-    }
-
-    .row{ display:flex; gap: 10px; align-items:center; flex-wrap:wrap; }
-    .col{ display:flex; flex-direction:column; gap: 10px; }
-    .split{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 980px){
-      body{ overflow:auto; }
-      .app{ grid-template-columns: 1fr; height:auto; overflow:visible; }
-    }
-
-    /* Inputs */
-    .input, .select, .textarea{
+    .segmented{
+      display:flex;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius: 999px;
       width: 100%;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 10px 12px;
-      outline: none;
-      font-size: 13px;
     }
-    .textarea{ min-height: 110px; resize: vertical; font-family: var(--mono); }
-    .input::placeholder,.textarea::placeholder{ color: rgba(234,240,255,.40); }
+    .segBtn{
+      flex:1;
+      text-align:center;
+      padding: 10px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 12px;
+      user-select:none;
+      background: transparent;
+    }
+    .segBtn.active{
+      color: var(--text);
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+    }
 
     .tag{
       display:inline-flex;
@@ -282,23 +283,10 @@
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.05);
     }
-    .kpiCard .v{
-      font-weight: 900;
-      font-size: 16px;
-      letter-spacing: .2px;
-    }
-    .kpiCard .l{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 4px;
-    }
+    .kpiCard .v{ font-weight: 1000; font-size: 16px; letter-spacing: .2px; }
+    .kpiCard .l{ font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-    /* Library list */
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
+    .list{ display:flex; flex-direction:column; gap: 10px; }
     .item{
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
@@ -314,20 +302,9 @@
       box-shadow: 0 14px 40px rgba(0,0,0,.35);
     }
     .itemTop{ display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; }
-    .itemTitle{
-      font-weight: 900;
-      font-size: 13px;
-      line-height: 1.25;
-      margin:0;
-    }
-    .itemDesc{
-      margin: 6px 0 0;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
+    .itemTitle{ font-weight: 1000; font-size: 13px; line-height: 1.25; margin:0; }
+    .itemDesc{ margin: 6px 0 0; font-size: 12px; color: var(--muted); line-height: 1.35; }
 
-    /* Main header */
     .mainHeader{
       display:flex;
       align-items:flex-start;
@@ -341,17 +318,8 @@
       gap: 6px;
       min-width: 260px;
     }
-    .hTitle h1{
-      margin:0;
-      font-size: 18px;
-      letter-spacing:.2px;
-    }
-    .hTitle .meta{
-      display:flex;
-      gap: 8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
+    .hTitle h1{ margin:0; font-size: 18px; letter-spacing:.2px; }
+    .hTitle .meta{ display:flex; gap: 8px; flex-wrap:wrap; align-items:center; }
 
     .tabs{
       display:flex;
@@ -368,7 +336,7 @@
       cursor:pointer;
       border: 1px solid transparent;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
       font-size: 12px;
       user-select:none;
     }
@@ -378,7 +346,6 @@
       background: rgba(255,255,255,.06);
     }
 
-    /* Lines */
     .lineList{ display:flex; flex-direction:column; gap: 10px; margin-top: 12px; }
     .lineCard{
       border: 1px solid rgba(255,255,255,.12);
@@ -387,21 +354,18 @@
       padding: 12px;
       overflow:hidden;
     }
-    .lineTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap: 10px;
-    }
+    .lineTop{ display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; }
     .lineLeft{ min-width: 0; }
+
     .jp{
       font-family: var(--jp);
       font-size: calc(16px * var(--fontScale));
-      font-weight: 800;
-      line-height: 1.45;
+      font-weight: 900;
+      line-height: 1.55;
       margin:0;
       word-break: break-word;
     }
+
     .reading{
       margin-top: 6px;
       font-size: calc(12px * var(--fontScale));
@@ -410,6 +374,7 @@
       line-height: 1.35;
       word-break: break-word;
     }
+
     .lineBadges{ display:flex; flex-direction:column; gap: 8px; align-items:flex-end; }
     .chk{
       display:flex; align-items:center; gap: 8px;
@@ -422,9 +387,6 @@
       user-select:none;
     }
     .chk input{ accent-color: var(--a1); }
-    .lineActions{
-      display:flex; gap: 8px; flex-wrap:wrap; margin-top: 10px;
-    }
 
     .details{
       margin-top: 10px;
@@ -434,18 +396,7 @@
     }
     .lineCard.open .details{ display:block; }
 
-    .pt{
-      margin:0;
-      color: var(--text);
-      font-size: calc(13px * var(--fontScale));
-      line-height: 1.55;
-    }
-    .notes{
-      margin-top: 10px;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
+    .notes{ margin-top: 10px; display:grid; grid-template-columns: 1fr; gap: 10px; }
     .box{
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.18);
@@ -462,13 +413,11 @@
       letter-spacing:.2px;
       text-transform: uppercase;
     }
-    .box p{
-      margin: 0;
-      font-size: calc(13px * var(--fontScale));
-      color: var(--text);
-      line-height: 1.55;
-      word-break: break-word;
-    }
+    .box p{ margin: 0; font-size: calc(13px * var(--fontScale)); color: var(--text); line-height: 1.55; word-break: break-word; }
+
+    .hr{ border:0; border-top: 1px solid rgba(255,255,255,.10); margin: 12px 0; }
+    .muted{ color: var(--muted); }
+    .spacer{ height: 10px; }
 
     /* Vocab */
     .vocabGrid{
@@ -477,9 +426,7 @@
       gap: 10px;
       margin-top: 12px;
     }
-    @media (max-width: 980px){
-      .vocabGrid{ grid-template-columns: 1fr; }
-    }
+    @media (max-width: 980px){ .vocabGrid{ grid-template-columns: 1fr; } }
     .vocabCard{
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
@@ -489,43 +436,14 @@
       justify-content:space-between;
       gap: 10px;
     }
-    .vocabCard .w{
-      font-family: var(--jp);
-      font-size: calc(16px * var(--fontScale));
-      font-weight: 900;
-      margin:0;
-    }
-    .vocabCard .r{
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-      font-family: var(--jp);
-    }
-    .vocabCard .m{
-      margin-top: 6px;
-      color: var(--text);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    .vocabRight{
-      display:flex;
-      flex-direction:column;
-      gap: 8px;
-      align-items:flex-end;
-      justify-content:space-between;
-      min-width: 120px;
-    }
+    .vocabCard .w{ font-family: var(--jp); font-size: calc(16px * var(--fontScale)); font-weight: 1000; margin:0; }
+    .vocabCard .r{ margin-top: 4px; color: var(--muted); font-size: 12px; font-family: var(--jp); }
+    .vocabCard .m{ margin-top: 6px; color: var(--text); font-size: 13px; line-height: 1.4; }
+    .vocabRight{ display:flex; flex-direction:column; gap: 8px; align-items:flex-end; justify-content:space-between; min-width: 120px; }
 
     /* Flashcards */
-    .cardWrap{
-      margin-top: 12px;
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 10px;
-    }
-    @media (max-width: 980px){
-      .cardWrap{ grid-template-columns: 1fr; }
-    }
+    .cardWrap{ margin-top: 12px; display:grid; grid-template-columns: 1.2fr .8fr; gap: 10px; }
+    @media (max-width: 980px){ .cardWrap{ grid-template-columns: 1fr; } }
     .flash{
       border: 1px solid rgba(255,255,255,.14);
       background: radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,.08), rgba(255,255,255,.03));
@@ -542,46 +460,16 @@
       position:relative;
       overflow:hidden;
     }
-    .flash .front{
-      font-family: var(--jp);
-      font-size: calc(30px * var(--fontScale));
-      font-weight: 1000;
-      letter-spacing:.3px;
-    }
-    .flash .back{
-      display:none;
-      width: 100%;
-      max-width: 520px;
-    }
+    .flash .front{ font-family: var(--jp); font-size: calc(30px * var(--fontScale)); font-weight: 1000; letter-spacing:.3px; }
+    .flash .back{ display:none; width: 100%; max-width: 520px; }
     .flash.revealed .back{ display:block; }
     .flash.revealed .hint{ display:none; }
-
-    .flash .hint{
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 6px;
-    }
-    .flash .subline{
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 13px;
-      font-family: var(--jp);
-    }
-    .flash .meaning{
-      margin-top: 8px;
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1.45;
-    }
+    .flash .hint{ color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .flash .subline{ margin-top: 6px; color: var(--muted); font-size: 13px; font-family: var(--jp); }
+    .flash .meaning{ margin-top: 8px; color: var(--text); font-size: 14px; line-height: 1.45; }
 
     /* Quiz */
-    .quizQ{
-      margin-top: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      border-radius: 18px;
-      padding: 12px;
-    }
+    .quizQ{ margin-top: 12px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); border-radius: 18px; padding: 12px; }
     .quizQ h3{ margin:0 0 10px; font-size: 14px; }
     .choices{ display:flex; flex-direction:column; gap: 8px; }
     .choice{
@@ -625,8 +513,7 @@
     .modalCard h2{ margin: 0 0 10px; font-size: 16px; }
     .modalCard .help{ color: var(--muted); font-size: 12px; margin: 0 0 12px; line-height: 1.45; }
 
-    /* Focus mode */
-    .focusMode body{ overflow:hidden; }
+    /* Focus overlay */
     .focus{
       position:fixed; inset:0;
       background: radial-gradient(1200px 700px at 20% 20%, rgba(0,180,255,.16), transparent 58%),
@@ -637,24 +524,26 @@
       padding: 14px;
     }
     .focus.open{ display:block; }
-    .focus .panel{ height: 100%; }
 
-    /* tiny icons */
     .ic{ width: 14px; height: 14px; display:inline-block; }
     .ic svg{ width:100%; height:100%; fill: currentColor; opacity:.9; }
-    .muted{ color: var(--muted); }
-    .spacer{ height: 10px; }
-    .hr{
-      border:0;
-      border-top: 1px solid rgba(255,255,255,.10);
-      margin: 12px 0;
-    }
 
-    /* Ruby */
-    ruby{ ruby-position: over; }
-    rt{ font-size: 0.58em; color: rgba(234,240,255,.75); font-weight: 700; }
+    /* ✅ Furigana corrigido: ruby/rt de verdade + alinhamento garantido */
+    ruby{
+      ruby-position: over;
+      ruby-align: center;
+      font-variant-east-asian: ruby;
+      line-height: 1.6;
+    }
+    rt{
+      font-size: 0.58em;
+      color: rgba(234,240,255,.78);
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
   </style>
 </head>
+
 <body>
   <div class="aurora"></div>
 
@@ -666,46 +555,28 @@
           <div class="logo" aria-hidden="true"></div>
           <div class="brandTitle">
             <div class="name">日本語テキストラボ</div>
-            <div class="sub">N5 / N4 • análise linha a linha • progresso local</div>
+            <div class="sub">N5 / N4 — textos analisados por linha</div>
           </div>
         </div>
-        <div class="pill" title="Tema muda com o tempo">⚡ <span id="themeLabel">hue</span></div>
+        <div class="pill" title="Tema muda com o tempo">⚡ <span id="themeLabel">hsl(200)</span></div>
       </div>
 
       <div class="content">
         <div class="col">
+
+          <!-- ✅ Separação por nível (botões) -->
+          <div class="segmented" aria-label="Nível">
+            <button class="segBtn active" id="segN5" type="button">N5</button>
+            <button class="segBtn" id="segN4" type="button">N4</button>
+          </div>
+
           <div class="row">
-            <select class="select" id="levelFilter" title="Filtrar por nível">
-              <option value="ALL">Nível: Todos</option>
-              <option value="N5">N5</option>
-              <option value="N4">N4</option>
-            </select>
             <button class="btn btnPrimary" id="btnNewText">
               <span class="ic" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
               </span>
               Criar texto
             </button>
-          </div>
-
-          <input class="input" id="searchInput" placeholder="Buscar título, JP ou palavra-chave..." />
-
-          <div class="kpi" aria-label="Resumo">
-            <div class="kpiCard">
-              <div class="v" id="kpiTexts">0</div>
-              <div class="l">Textos</div>
-            </div>
-            <div class="kpiCard">
-              <div class="v" id="kpiLinesDone">0</div>
-              <div class="l">Linhas revisadas</div>
-            </div>
-            <div class="kpiCard">
-              <div class="v" id="kpiDeck">0</div>
-              <div class="l">Deck (cards)</div>
-            </div>
-          </div>
-
-          <div class="row">
             <button class="btn" id="btnExport">
               <span class="ic" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18-5 5h3v6h4V7h3l-5-5z"/></svg>
@@ -718,20 +589,41 @@
               </span>
               Importar
             </button>
+          </div>
+
+          <input class="input" id="searchInput" placeholder="Buscar título / JP / palavra-chave..." />
+
+          <div class="kpi" aria-label="Resumo">
+            <div class="kpiCard">
+              <div class="v" id="kpiTexts">0</div>
+              <div class="l">Textos</div>
+            </div>
+            <div class="kpiCard">
+              <div class="v" id="kpiLinesDone">0</div>
+              <div class="l">Linhas revisadas</div>
+            </div>
+            <div class="kpiCard">
+              <div class="v" id="kpiDeck">0</div>
+              <div class="l">Deck</div>
+            </div>
+          </div>
+
+          <div class="row">
             <button class="btn" id="btnReset">
               <span class="ic" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 1 1-9.9-1h-2.02A7 7 0 1 0 12 6z"/></svg>
               </span>
-              Reset parcial
+              Reset progresso
             </button>
           </div>
 
           <div class="hr"></div>
 
           <div class="list" id="libraryList"></div>
+
           <div class="spacer"></div>
           <div class="muted" style="font-size:12px;line-height:1.45">
-            Dica: clique em uma linha para abrir tradução, gramática e vocabulário. Marque como “revisada” e o progresso fica salvo no seu navegador.
+            Clique num texto → clique numa linha → abre tradução, gramática e vocabulário. Marque “Revisada” e o progresso fica salvo no navegador.
           </div>
         </div>
       </div>
@@ -755,11 +647,11 @@
               <div class="tab" data-tab="TAB_NOTES" role="tab">Notas</div>
             </div>
 
-            <button class="btn btnAccent" id="btnFocus">
+            <button class="btn btnPrimary" id="btnFocus">
               <span class="ic" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H5v5zm10 9h-3v2h5v-5h-2v3zm0-14V5h-5v2h3v3h2z"/></svg>
               </span>
-              <strong>Modo foco</strong>
+              Modo foco
             </button>
           </div>
         </div>
@@ -769,32 +661,20 @@
         <div id="emptyState" style="opacity:.95">
           <div class="box">
             <div class="boxTitle">
-              <b>Comece por aqui</b>
-              <span class="tag">📌 <b>N5</b> e <b>N4</b></span>
+              <b>Como usar</b>
+              <span class="tag">N5 / N4</span>
             </div>
             <p>
-              À esquerda você tem a biblioteca de textos. Cada texto vem com análise linha a linha (JP, leitura, tradução, gramática e vocabulário).
-              Você também pode criar seus próprios textos e montar seu deck de flashcards.
+              À esquerda: escolha N5 ou N4, selecione um texto e estude linha a linha.
+              Você pode criar textos próprios e montar seu deck a partir do vocabulário.
             </p>
           </div>
 
-          <div class="split" style="margin-top:10px">
-            <div class="box">
-              <div class="boxTitle"><b>Essenciais (já prontos)</b></div>
-              <p>✅ Filtro N5/N4 • 🔎 Busca • 📚 Análise linha a linha • ⭐ Favoritos • 🧠 Deck • 🎯 Quiz • 📝 Notas • 💾 Tudo salvo no navegador</p>
-            </div>
-            <div class="box">
-              <div class="boxTitle"><b>Controles rápidos</b></div>
-              <div class="row">
-                <button class="btn" id="btnToggleFuri">Furigana: ON</button>
-                <button class="btn" id="btnFontMinus">A-</button>
-                <button class="btn" id="btnFontPlus">A+</button>
-                <button class="btn" id="btnToggleReading">Leitura: ON</button>
-              </div>
-              <div class="muted" style="font-size:12px;margin-top:8px;line-height:1.4">
-                Ajuste para leitura longa e revisão rápida.
-              </div>
-            </div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnToggleFuri">Furigana: ON</button>
+            <button class="btn" id="btnFontMinus">A-</button>
+            <button class="btn" id="btnFontPlus">A+</button>
+            <button class="btn" id="btnToggleReading">Leitura: ON</button>
           </div>
         </div>
 
@@ -821,9 +701,9 @@
           <div class="box">
             <div class="boxTitle">
               <b>Vocabulário do texto</b>
-              <span class="tag">Clique em “+ Deck” para adicionar</span>
+              <span class="tag">+ Deck</span>
             </div>
-            <p>O vocabulário abaixo é agregado a partir das linhas (e você pode montar um deck com o que interessa).</p>
+            <p>Lista agregada do texto atual. Use “+ Deck” para revisar depois.</p>
           </div>
           <div class="vocabGrid" id="vocabGrid"></div>
         </div>
@@ -831,10 +711,10 @@
         <div id="tab_FLASH" style="display:none">
           <div class="box">
             <div class="boxTitle">
-              <b>Deck (flashcards)</b>
-              <span class="tag">Spaced practice simples • local</span>
+              <b>Deck</b>
+              <span class="tag">revisão rápida</span>
             </div>
-            <p>Use “Revelar” e marque sua confiança. O algoritmo é leve (não é SM-2 completo), mas já dá curva boa de revisão.</p>
+            <p>Revele a resposta e marque sua confiança (1/2/3). O agendamento é leve e funciona bem pra rotina.</p>
           </div>
 
           <div class="cardWrap">
@@ -859,8 +739,8 @@
               </div>
 
               <div class="box">
-                <div class="boxTitle"><b>Status do deck</b></div>
-                <p id="deckStatus" class="muted" style="font-size:12px;line-height:1.45">Adicione cards a partir da aba Vocabulário.</p>
+                <div class="boxTitle"><b>Status</b></div>
+                <p id="deckStatus" class="muted" style="font-size:12px;line-height:1.45">Adicione cards na aba Vocabulário.</p>
               </div>
 
               <div class="row">
@@ -874,9 +754,9 @@
           <div class="box">
             <div class="boxTitle">
               <b>Quiz</b>
-              <span class="tag">Vocab → significado (PT)</span>
+              <span class="tag">PT ⇄ JP</span>
             </div>
-            <p>Gere perguntas rápidas com o vocabulário do texto atual (ou do deck).</p>
+            <p>Gere perguntas rápidas a partir do vocabulário do texto (ou do seu deck).</p>
             <div class="row">
               <button class="btn btnPrimary" id="btnNewQuiz">Gerar quiz</button>
               <select class="select" id="quizSource" style="max-width:260px">
@@ -898,12 +778,12 @@
           <div class="box">
             <div class="boxTitle">
               <b>Notas do texto</b>
-              <span class="tag">Salvo automaticamente</span>
+              <span class="tag">auto-save</span>
             </div>
-            <p>Use este espaço para escrever insights, padrões de gramática, frases úteis, etc.</p>
-            <textarea class="textarea" id="textNotes" placeholder="Ex.: 〜ながら = enquanto; 〜てしまう nuance de arrependimento; etc."></textarea>
+            <p>Escreva padrões, gramática, frases úteis e observações.</p>
+            <textarea class="textarea" id="textNotes" placeholder="Ex.: 〜ように = para que; 〜ておく = fazer antes; etc."></textarea>
             <div class="row" style="justify-content:space-between;align-items:center">
-              <div class="muted" style="font-size:12px">Auto-save ativo • sem servidor</div>
+              <div class="muted" style="font-size:12px">Salvo automaticamente</div>
               <button class="btn" id="btnClearNotes">Limpar notas</button>
             </div>
           </div>
@@ -915,16 +795,16 @@
 
   <!-- Focus overlay -->
   <div class="focus" id="focusOverlay">
-    <section class="panel">
+    <section class="panel" style="height:100%">
       <div class="panelHeader">
         <div class="row">
           <button class="btn btnPrimary" id="btnExitFocus">
             <span class="ic" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L12 14.83l-6.89 6.88-1.41-1.42L10.59 12 3.7 5.71 5.11 4.29 12 11.17l6.89-6.88z"/></svg>
             </span>
-            Sair do foco
+            Sair
           </button>
-          <div class="pill">Modo foco • leitura contínua</div>
+          <div class="pill">Modo foco</div>
         </div>
         <div class="row">
           <button class="btn" id="btnToggleFuriFocus">Furigana: ON</button>
@@ -935,7 +815,7 @@
       </div>
       <div class="content">
         <div class="muted" style="font-size:12px;line-height:1.45">
-          Toque/clique em uma linha para abrir detalhes. Ideal para revisão longa.
+          Clique numa linha para abrir detalhes.
         </div>
         <div class="lineList" id="focusLineList"></div>
       </div>
@@ -946,51 +826,25 @@
   <div class="modal" id="modalNew">
     <div class="modalCard">
       <div class="row" style="justify-content:space-between;align-items:center">
-        <h2>Adicionar texto personalizado</h2>
-        <button class="btn" id="btnCloseModalNew">
-          <span class="ic" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L12 14.83l-6.89 6.88-1.41-1.42L10.59 12 3.7 5.71 5.11 4.29 12 11.17l6.89-6.88z"/></svg>
-          </span>
-          Fechar
-        </button>
+        <h2>Adicionar texto</h2>
+        <button class="btn" id="btnCloseModalNew">Fechar</button>
       </div>
       <p class="help">
-        Cole seu texto em japonês (uma frase por linha). O site vai quebrar em linhas e você pode preencher leitura, tradução, gramática e vocab por linha (opcional).
-        Tudo fica salvo localmente.
+        Cole o texto em japonês (uma frase por linha). Você pode preencher leitura, tradução, gramática e vocab depois.
       </p>
 
-      <div class="split">
-        <div class="col">
-          <label class="muted" style="font-size:12px">Título</label>
-          <input class="input" id="newTitle" placeholder="Ex.: 友だちと映画に行く" />
-          <label class="muted" style="font-size:12px">Nível</label>
-          <select class="select" id="newLevel">
-            <option value="N5">N5</option>
-            <option value="N4">N4</option>
-          </select>
-          <label class="muted" style="font-size:12px">Descrição</label>
-          <input class="input" id="newDesc" placeholder="Ex.: Texto curto para praticar 〜たい, partículas e vocabulário básico." />
-          <label class="muted" style="font-size:12px">Texto (uma linha por frase)</label>
-          <textarea class="textarea" id="newRaw" placeholder="Ex.&#10;今日は友だちと映画に行きます。&#10;駅で待ち合わせます。"></textarea>
-        </div>
+      <div class="row">
+        <input class="input" id="newTitle" placeholder="Título (ex.: 学校の一日)" />
+        <select class="select" id="newLevel" style="max-width:140px">
+          <option value="N5">N5</option>
+          <option value="N4">N4</option>
+        </select>
+      </div>
+      <input class="input" id="newDesc" placeholder="Descrição (opcional)" />
+      <textarea class="textarea" id="newRaw" placeholder="Cole aqui (1 frase por linha)"></textarea>
 
-        <div class="col">
-          <div class="box">
-            <div class="boxTitle"><b>Após criar</b></div>
-            <p>1) Selecione o texto na biblioteca<br>2) Clique em cada linha e adicione notas/gramática<br>3) Adicione palavras ao deck na aba Vocabulário</p>
-          </div>
-
-          <div class="box">
-            <div class="boxTitle"><b>Atalho</b></div>
-            <p class="muted" style="font-size:12px;line-height:1.45">
-              Não quer preencher tudo agora? Sem problema. Comece só com JP e vá completando conforme revisa.
-            </p>
-          </div>
-
-          <div class="row" style="justify-content:flex-end">
-            <button class="btn btnAccent" id="btnCreateText"><strong>Criar texto</strong></button>
-          </div>
-        </div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn btnPrimary" id="btnCreateText">Criar</button>
       </div>
     </div>
   </div>
@@ -999,179 +853,334 @@
   <div class="modal" id="modalImport">
     <div class="modalCard">
       <div class="row" style="justify-content:space-between;align-items:center">
-        <h2>Importar dados (JSON)</h2>
+        <h2>Importar (JSON)</h2>
         <button class="btn" id="btnCloseModalImport">Fechar</button>
       </div>
-      <p class="help">Cole aqui o JSON exportado. Isso vai mesclar biblioteca + progresso + deck.</p>
+      <p class="help">Cole o JSON exportado. Isso mescla textos + progresso + deck.</p>
       <textarea class="textarea" id="importArea" placeholder='{ "texts":[...], "state":{...} }'></textarea>
       <div class="row" style="justify-content:flex-end">
-        <button class="btn btnPrimary" id="btnDoImport">Importar agora</button>
+        <button class="btn btnPrimary" id="btnDoImport">Importar</button>
       </div>
     </div>
   </div>
 
   <script>
     /***********************
-     * DATA (N5/N4 samples)
+     * BUILT-IN TEXTS (maiores)
+     * ✅ Furigana correto: <ruby>漢字<rt>よみ</rt></ruby>
      ***********************/
     const builtInTexts = [
+      /* ===================== N5 ===================== */
       {
-        id: "n5_super",
+        id: "n5_school_day",
         level: "N5",
-        title: "スーパーで買い物（N5）",
-        desc: "Partículas básicas・〜たい・contagem simples",
-        tags: ["cotidiano", "compras"],
+        title: "学校の一日（N5）",
+        desc: "rotina・時間・場所・て-form sequência",
+        tags: ["学校", "日常"],
         lines: [
           {
-            jp: "今日はスーパーに行きます。",
-            jpRuby: "今日<rt>きょう</rt>はスーパーに行<rt>い</rt>きます。",
-            reading: "きょうは すーぱーに いきます。",
-            pt: "Hoje eu vou ao supermercado.",
-            grammar: "に = destino (ir para). は = tópico do assunto (hoje).",
+            jp: "私は毎朝六時に起きます。",
+            jpRuby: "私<ruby>は<rt></rt></ruby>毎朝<ruby>六時<rt>ろくじ</rt></ruby>に<ruby>起<rt>お</rt></ruby>きます。",
+            reading: "わたしは まいあさ ろくじに おきます。",
+            pt: "Eu acordo às seis da manhã todos os dias.",
+            grammar: "に = hora; 毎〜 = ‘todo…’.",
             vocab: [
-              { w:"今日", r:"きょう", m:"hoje" },
-              { w:"行く", r:"いく", m:"ir" },
-              { w:"スーパー", r:"すーぱー", m:"supermercado" }
+              { w:"毎朝", r:"まいあさ", m:"todas as manhãs" },
+              { w:"起きる", r:"おきる", m:"acordar" },
+              { w:"六時", r:"ろくじ", m:"seis horas" }
             ]
           },
           {
-            jp: "野菜を買いたいです。",
-            jpRuby: "野菜<rt>やさい</rt>を買<rt>か</rt>いたいです。",
-            reading: "やさいを かいたいです。",
-            pt: "Eu quero comprar legumes/verduras.",
-            grammar: "〜たい = desejo (quero fazer). を = objeto direto.",
+            jp: "朝ご飯を食べて、シャワーを浴びます。",
+            jpRuby: "<ruby>朝<rt>あさ</rt></ruby>ご<ruby>飯<rt>はん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べて、シャワーを<ruby>浴<rt>あ</rt></ruby>びます。",
+            reading: "あさごはんを たべて、しゃわーを あびます。",
+            pt: "Eu como o café da manhã e tomo banho.",
+            grammar: "〜て = sequência de ações.",
             vocab: [
-              { w:"野菜", r:"やさい", m:"legumes/verduras" },
-              { w:"買う", r:"かう", m:"comprar" }
+              { w:"朝ご飯", r:"あさごはん", m:"café da manhã" },
+              { w:"食べる", r:"たべる", m:"comer" },
+              { w:"浴びる", r:"あびる", m:"tomar (banho)" }
             ]
           },
           {
-            jp: "でも、お金があまりありません。",
-            jpRuby: "でも、お金<rt>かね</rt>があまりありません。",
-            reading: "でも、おかねが あまり ありません。",
-            pt: "Mas eu não tenho muito dinheiro.",
-            grammar: "あまり + negativo = 'não muito'. が = sujeito (o dinheiro).",
+            jp: "七時半に家を出ます。",
+            jpRuby: "<ruby>七時半<rt>しちじはん</rt></ruby>に<ruby>家<rt>いえ</rt></ruby>を<ruby>出<rt>で</rt></ruby>ます。",
+            reading: "しちじはんに いえを でます。",
+            pt: "Eu saio de casa às 7:30.",
+            grammar: "を = ponto de saída (家を出る).",
             vocab: [
-              { w:"お金", r:"おかね", m:"dinheiro" },
-              { w:"あまり", r:"あまり", m:"(com negativo) não muito" },
-              { w:"ある", r:"ある", m:"haver/ter (inanimado)" }
-            ]
-          },
-          {
-            jp: "安いりんごを三つ買いました。",
-            jpRuby: "安<rt>やす</rt>いりんごを三<rt>みっ</rt>つ買<rt>か</rt>いました。",
-            reading: "やすい りんごを みっつ かいました。",
-            pt: "Comprei três maçãs baratas.",
-            grammar: "三つ = contagem (1〜10 com 〜つ). Passado: 買いました.",
-            vocab: [
-              { w:"安い", r:"やすい", m:"barato" },
-              { w:"三つ", r:"みっつ", m:"três (contagem 〜つ)" },
-              { w:"買う", r:"かう", m:"comprar" }
-            ]
-          },
-          {
-            jp: "レジでカードで払います。",
-            jpRuby: "レジでカードで払<rt>はら</rt>います。",
-            reading: "れじで かーどで はらいます。",
-            pt: "No caixa, eu pago com cartão.",
-            grammar: "で = local da ação (レジで) / meio/instrumento (カードで).",
-            vocab: [
-              { w:"レジ", r:"れじ", m:"caixa (checkout)" },
-              { w:"払う", r:"はらう", m:"pagar" },
-              { w:"カード", r:"かーど", m:"cartão" }
-            ]
-          },
-          {
-            jp: "家に帰って、すぐ料理します。",
-            jpRuby: "家<rt>いえ</rt>に帰<rt>かえ</rt>って、すぐ料理<rt>りょうり</rt>します。",
-            reading: "いえに かえって、すぐ りょうりします。",
-            pt: "Eu volto para casa e cozinho logo em seguida.",
-            grammar: "〜て = sequência de ações. すぐ = imediatamente.",
-            vocab: [
+              { w:"七時半", r:"しちじはん", m:"sete e meia" },
               { w:"家", r:"いえ", m:"casa" },
+              { w:"出る", r:"でる", m:"sair" }
+            ]
+          },
+          {
+            jp: "駅まで歩いて行きます。",
+            jpRuby: "<ruby>駅<rt>えき</rt></ruby>まで<ruby>歩<rt>ある</rt></ruby>いて<ruby>行<rt>い</rt></ruby>きます。",
+            reading: "えきまで あるいて いきます。",
+            pt: "Eu vou a pé até a estação.",
+            grammar: "まで = até; 〜て行く = ir fazendo.",
+            vocab: [
+              { w:"駅", r:"えき", m:"estação" },
+              { w:"歩く", r:"あるく", m:"andar" },
+              { w:"まで", r:"まで", m:"até" }
+            ]
+          },
+          {
+            jp: "電車で学校に行きます。",
+            jpRuby: "<ruby>電車<rt>でんしゃ</rt></ruby>で<ruby>学校<rt>がっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。",
+            reading: "でんしゃで がっこうに いきます。",
+            pt: "Eu vou para a escola de trem.",
+            grammar: "で = meio; に = destino.",
+            vocab: [
+              { w:"電車", r:"でんしゃ", m:"trem" },
+              { w:"学校", r:"がっこう", m:"escola" }
+            ]
+          },
+          {
+            jp: "一時間目は日本語です。",
+            jpRuby: "<ruby>一時間目<rt>いちじかんめ</rt></ruby>は<ruby>日本語<rt>にほんご</rt></ruby>です。",
+            reading: "いちじかんめは にほんごです。",
+            pt: "A primeira aula é japonês.",
+            grammar: "〜は〜です = estrutura básica.",
+            vocab: [
+              { w:"一時間目", r:"いちじかんめ", m:"primeira aula/período" },
+              { w:"日本語", r:"にほんご", m:"língua japonesa" }
+            ]
+          },
+          {
+            jp: "先生の話をよく聞きます。",
+            jpRuby: "<ruby>先生<rt>せんせい</rt></ruby>の<ruby>話<rt>はなし</rt></ruby>をよく<ruby>聞<rt>き</rt></ruby>きます。",
+            reading: "せんせいの はなしを よく ききます。",
+            pt: "Eu escuto bem o que o professor fala.",
+            grammar: "の = posse/ligação; を = objeto.",
+            vocab: [
+              { w:"先生", r:"せんせい", m:"professor" },
+              { w:"話", r:"はなし", m:"fala / história" },
+              { w:"聞く", r:"きく", m:"ouvir" }
+            ]
+          },
+          {
+            jp: "わからない言葉はノートに書きます。",
+            jpRuby: "わからない<ruby>言葉<rt>ことば</rt></ruby>はノートに<ruby>書<rt>か</rt></ruby>きます。",
+            reading: "わからない ことばは のーとに かきます。",
+            pt: "As palavras que eu não entendo, eu escrevo no caderno.",
+            grammar: "AはB = tópico; に = lugar/registro (no caderno).",
+            vocab: [
+              { w:"言葉", r:"ことば", m:"palavra" },
+              { w:"ノート", r:"のーと", m:"caderno" },
+              { w:"書く", r:"かく", m:"escrever" }
+            ]
+          },
+          {
+            jp: "昼は友だちと食堂でご飯を食べます。",
+            jpRuby: "<ruby>昼<rt>ひる</rt></ruby>は<ruby>友<rt>とも</rt></ruby>だちと<ruby>食堂<rt>しょくどう</rt></ruby>でご<ruby>飯<rt>はん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べます。",
+            reading: "ひるは ともだちと しょくどうで ごはんを たべます。",
+            pt: "No almoço, eu como com um amigo no refeitório.",
+            grammar: "と = com; で = local da ação.",
+            vocab: [
+              { w:"昼", r:"ひる", m:"meio-dia / almoço" },
+              { w:"食堂", r:"しょくどう", m:"refeitório" },
+              { w:"友だち", r:"ともだち", m:"amigo" }
+            ]
+          },
+          {
+            jp: "午後は図書館で勉強します。",
+            jpRuby: "<ruby>午後<rt>ごご</rt></ruby>は<ruby>図書館<rt>としょかん</rt></ruby>で<ruby>勉強<rt>べんきょう</rt></ruby>します。",
+            reading: "ごごは としょかんで べんきょうします。",
+            pt: "À tarde, eu estudo na biblioteca.",
+            grammar: "で = local; します = verbo fazer.",
+            vocab: [
+              { w:"午後", r:"ごご", m:"tarde" },
+              { w:"図書館", r:"としょかん", m:"biblioteca" },
+              { w:"勉強", r:"べんきょう", m:"estudo" }
+            ]
+          },
+          {
+            jp: "四時ごろ、学校が終わります。",
+            jpRuby: "<ruby>四時<rt>よじ</rt></ruby>ごろ、<ruby>学校<rt>がっこう</rt></ruby>が<ruby>終<rt>お</rt></ruby>わります。",
+            reading: "よじごろ、がっこうが おわります。",
+            pt: "Por volta das quatro, a escola termina.",
+            grammar: "ごろ = por volta; が = sujeito (termina).",
+            vocab: [
+              { w:"ごろ", r:"ごろ", m:"por volta de" },
+              { w:"終わる", r:"おわる", m:"terminar" }
+            ]
+          },
+          {
+            jp: "家に帰って、宿題をします。",
+            jpRuby: "<ruby>家<rt>いえ</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>って、<ruby>宿題<rt>しゅくだい</rt></ruby>をします。",
+            reading: "いえに かえって、しゅくだいを します。",
+            pt: "Eu volto para casa e faço a lição de casa.",
+            grammar: "〜て = sequência; を = objeto.",
+            vocab: [
               { w:"帰る", r:"かえる", m:"voltar" },
-              { w:"料理", r:"りょうり", m:"cozinhar / culinária" }
+              { w:"宿題", r:"しゅくだい", m:"lição de casa" }
+            ]
+          },
+          {
+            jp: "夜は少しテレビを見て、十一時に寝ます。",
+            jpRuby: "<ruby>夜<rt>よる</rt></ruby>は<ruby>少<rt>すこ</rt></ruby>しテレビを<ruby>見<rt>み</rt></ruby>て、<ruby>十一時<rt>じゅういちじ</rt></ruby>に<ruby>寝<rt>ね</rt></ruby>ます。",
+            reading: "よるは すこし てれびを みて、じゅういちじに ねます。",
+            pt: "À noite eu assisto um pouco de TV e durmo às 11.",
+            grammar: "に = hora; 〜て = sequência.",
+            vocab: [
+              { w:"夜", r:"よる", m:"noite" },
+              { w:"少し", r:"すこし", m:"um pouco" },
+              { w:"寝る", r:"ねる", m:"dormir" }
             ]
           }
         ]
       },
+
+      /* ===================== N4 ===================== */
       {
-        id: "n4_rain",
+        id: "n4_moving_prep",
         level: "N4",
-        title: "雨の日の約束（N4）",
-        desc: "〜のに・〜てしまう・〜そうだ・理由/contraste",
-        tags: ["clima", "encontro"],
+        title: "引っ越しの準備（N4）",
+        desc: "〜ことになった・〜ために・〜ておく・〜ように",
+        tags: ["生活", "引っ越し"],
         lines: [
           {
-            jp: "朝から雨が降っていました。",
-            jpRuby: "朝<rt>あさ</rt>から雨<rt>あめ</rt>が降<rt>ふ</rt>っていました。",
-            reading: "あさから あめが ふっていました。",
-            pt: "Desde a manhã estava chovendo.",
-            grammar: "〜ていました = ação em progresso/estado no passado.",
+            jp: "来月、仕事の都合で引っ越すことになりました。",
+            jpRuby: "<ruby>来月<rt>らいげつ</rt></ruby>、<ruby>仕事<rt>しごと</rt></ruby>の<ruby>都合<rt>つごう</rt></ruby>で<ruby>引<rt>ひ</rt></ruby>っ<ruby>越<rt>こ</rt></ruby>すことになりました。",
+            reading: "らいげつ、しごとの つごうで ひっこす ことに なりました。",
+            pt: "No mês que vem, por causa do trabalho, ficou decidido que eu vou me mudar.",
+            grammar: "〜ことになった = ficou decidido (por circunstâncias).",
             vocab: [
-              { w:"朝", r:"あさ", m:"manhã" },
-              { w:"雨", r:"あめ", m:"chuva" },
-              { w:"降る", r:"ふる", m:"cair (chuva/neve)" }
+              { w:"来月", r:"らいげつ", m:"mês que vem" },
+              { w:"都合", r:"つごう", m:"conveniência / circunstância" },
+              { w:"引っ越す", r:"ひっこす", m:"mudar de casa" }
             ]
           },
           {
-            jp: "友だちと駅で会う約束をしていたのに、電車が遅れました。",
-            jpRuby: "友<rt>とも</rt>だちと駅<rt>えき</rt>で会<rt>あ</rt>う約束<rt>やくそく</rt>をしていたのに、電車<rt>でんしゃ</rt>が遅<rt>おく</rt>れました。",
-            reading: "ともだちと えきで あう やくそくを していたのに、でんしゃが おくれました。",
-            pt: "Eu tinha combinado de encontrar um amigo na estação, mas o trem atrasou.",
-            grammar: "〜のに = contraste/contrariedade (“apesar de…/mas…”).",
+            jp: "新しい部屋は駅から近いそうです。",
+            jpRuby: "<ruby>新<rt>あたら</rt></ruby>しい<ruby>部屋<rt>へや</rt></ruby>は<ruby>駅<rt>えき</rt></ruby>から<ruby>近<rt>ちか</rt></ruby>いそうです。",
+            reading: "あたらしい へやは えきから ちかいそうです。",
+            pt: "Parece que o novo apartamento é perto da estação.",
+            grammar: "〜そうだ = parece/foi dito que.",
             vocab: [
-              { w:"約束", r:"やくそく", m:"promessa/combinação" },
-              { w:"電車", r:"でんしゃ", m:"trem" },
-              { w:"遅れる", r:"おくれる", m:"atrasar-se" }
+              { w:"部屋", r:"へや", m:"quarto/apartamento" },
+              { w:"近い", r:"ちかい", m:"perto" }
             ]
           },
           {
-            jp: "スマホで連絡しようと思ったら、バッテリーが切れてしまいました。",
-            jpRuby: "スマホで連絡<rt>れんらく</rt>しようと思<rt>おも</rt>ったら、バッテリーが切<rt>き</rt>れてしまいました。",
-            reading: "すまほで れんらくしようと おもったら、ばってりーが きれてしまいました。",
-            pt: "Quando pensei em avisar pelo celular, a bateria acabou (infelizmente).",
-            grammar: "〜ようと思ったら = quando fui tentar…; 〜てしまう = conclusão + nuance de arrependimento/inesperado.",
+            jp: "まず、必要な物だけ残すために、整理を始めました。",
+            jpRuby: "まず、<ruby>必要<rt>ひつよう</rt></ruby>な<ruby>物<rt>もの</rt></ruby>だけ<ruby>残<rt>のこ</rt></ruby>すために、<ruby>整理<rt>せいり</rt></ruby>を<ruby>始<rt>はじ</rt></ruby>めました。",
+            reading: "まず、ひつような ものだけ のこす ために、せいりを はじめました。",
+            pt: "Primeiro, para deixar apenas o necessário, comecei a organizar.",
+            grammar: "〜ために = para / a fim de.",
             vocab: [
-              { w:"連絡", r:"れんらく", m:"contato/avisar" },
-              { w:"切れる", r:"きれる", m:"acabar (bateria), cortar" },
-              { w:"思う", r:"おもう", m:"pensar/achar" }
+              { w:"必要", r:"ひつよう", m:"necessário" },
+              { w:"整理", r:"せいり", m:"organização" },
+              { w:"残す", r:"のこす", m:"deixar / manter" }
             ]
           },
           {
-            jp: "しかたがないので、近くのカフェで待つことにしました。",
-            jpRuby: "しかたがないので、近<rt>ちか</rt>くのカフェで待<rt>ま</rt>つことにしました。",
-            reading: "しかたがないので、ちかくの かふぇで まつことにしました。",
-            pt: "Como não tinha jeito, decidi esperar em um café próximo.",
-            grammar: "V-辞書形 + ことにする = decidir fazer (decisão).",
+            jp: "古い服は捨てるか、友だちにあげるつもりです。",
+            jpRuby: "<ruby>古<rt>ふる</rt></ruby>い<ruby>服<rt>ふく</rt></ruby>は<ruby>捨<rt>す</rt></ruby>てるか、<ruby>友<rt>とも</rt></ruby>だちにあげるつもりです。",
+            reading: "ふるい ふくは すてるか、ともだちに あげる つもりです。",
+            pt: "Quanto às roupas velhas, pretendo jogar fora ou dar para um amigo.",
+            grammar: "〜つもり = intenção; AかB = ou.",
             vocab: [
-              { w:"しかたがない", r:"しかたがない", m:"não tem jeito" },
-              { w:"近く", r:"ちかく", m:"perto / nas proximidades" },
-              { w:"待つ", r:"まつ", m:"esperar" }
+              { w:"捨てる", r:"すてる", m:"jogar fora" },
+              { w:"あげる", r:"あげる", m:"dar (para alguém)" },
+              { w:"つもり", r:"つもり", m:"intenção" }
             ]
           },
           {
-            jp: "窓の外を見ると、雨が弱くなりそうでした。",
-            jpRuby: "窓<rt>まど</rt>の外<rt>そと</rt>を見<rt>み</rt>ると、雨<rt>あめ</rt>が弱<rt>よわ</rt>くなりそうでした。",
-            reading: "まどの そとを みると、あめが よわく なりそうでした。",
-            pt: "Ao olhar para fora da janela, parecia que a chuva ia enfraquecer.",
-            grammar: "〜そうだ = parece que vai… (aparência).",
+            jp: "ダンボールは足りなくなりそうなので、多めに買っておきました。",
+            jpRuby: "ダンボールは<ruby>足<rt>た</rt></ruby>りなくなりそうなので、<ruby>多<rt>おお</rt></ruby>めに<ruby>買<rt>か</rt></ruby>っておきました。",
+            reading: "だんぼーるは たりなく なりそうなので、おおめに かっておきました。",
+            pt: "Como parece que vai faltar caixa de papelão, comprei a mais com antecedência.",
+            grammar: "〜そう = parece que vai; 〜ておく = fazer antes (preparação).",
             vocab: [
-              { w:"窓", r:"まど", m:"janela" },
-              { w:"外", r:"そと", m:"fora" },
-              { w:"弱くなる", r:"よわくなる", m:"enfraquecer" }
+              { w:"足りる", r:"たりる", m:"ser suficiente" },
+              { w:"多め", r:"おおめ", m:"um pouco a mais" },
+              { w:"買っておく", r:"かっておく", m:"comprar antecipadamente" }
             ]
           },
           {
-            jp: "しばらくしてから友だちが来て、「ごめん、迷ってしまった」と言いました。",
-            jpRuby: "しばらくしてから友<rt>とも</rt>だちが来<rt>き</rt>て、「ごめん、迷<rt>まよ</rt>ってしまった」と言<rt>い</rt>いました。",
-            reading: "しばらくしてから ともだちが きて、「ごめん、まよってしまった」といいました。",
-            pt: "Depois de um tempo, meu amigo chegou e disse: “Desculpa, eu me perdi.”",
-            grammar: "〜てしまった = acabou acontecendo (com arrependimento).",
+            jp: "割れやすい物は新聞紙で包むようにしています。",
+            jpRuby: "<ruby>割<rt>わ</rt></ruby>れやすい<ruby>物<rt>もの</rt></ruby>は<ruby>新聞紙<rt>しんぶんし</rt></ruby>で<ruby>包<rt>つつ</rt></ruby>むようにしています。",
+            reading: "われやすい ものは しんぶんしで つつむ ように しています。",
+            pt: "Eu procuro embrulhar coisas frágeis com jornal.",
+            grammar: "〜ようにしている = eu tento/faz parte do meu hábito.",
             vocab: [
-              { w:"しばらく", r:"しばらく", m:"por um tempo" },
-              { w:"迷う", r:"まよう", m:"perder-se / ficar indeciso" },
-              { w:"言う", r:"いう", m:"dizer" }
+              { w:"割れやすい", r:"われやすい", m:"quebrável / frágil" },
+              { w:"新聞紙", r:"しんぶんし", m:"papel de jornal" },
+              { w:"包む", r:"つつむ", m:"embrulhar" }
+            ]
+          },
+          {
+            jp: "住所が変わるので、役所で手続きをしなければなりません。",
+            jpRuby: "<ruby>住所<rt>じゅうしょ</rt></ruby>が<ruby>変<rt>か</rt></ruby>わるので、<ruby>役所<rt>やくしょ</rt></ruby>で<ruby>手続<rt>てつづ</rt></ruby>きをしなければなりません。",
+            reading: "じゅうしょが かわるので、やくしょで てつづきを しなければ なりません。",
+            pt: "Como o endereço vai mudar, preciso fazer os procedimentos na prefeitura.",
+            grammar: "〜なければならない = precisa / deve.",
+            vocab: [
+              { w:"住所", r:"じゅうしょ", m:"endereço" },
+              { w:"役所", r:"やくしょ", m:"prefeitura/órgão público" },
+              { w:"手続き", r:"てつづき", m:"procedimento" }
+            ]
+          },
+          {
+            jp: "電気とガスは早めに連絡しておいたほうがいいです。",
+            jpRuby: "<ruby>電気<rt>でんき</rt></ruby>とガスは<ruby>早<rt>はや</rt></ruby>めに<ruby>連絡<rt>れんらく</rt></ruby>しておいたほうがいいです。",
+            reading: "でんきと がすは はやめに れんらくしておいた ほうが いいです。",
+            pt: "É melhor avisar (com antecedência) sobre luz e gás.",
+            grammar: "〜ておいたほうがいい = é melhor fazer antes.",
+            vocab: [
+              { w:"電気", r:"でんき", m:"eletricidade" },
+              { w:"連絡", r:"れんらく", m:"contato/aviso" },
+              { w:"早め", r:"はやめ", m:"mais cedo / antecipado" }
+            ]
+          },
+          {
+            jp: "引っ越し当日は雨が降らないといいのですが。",
+            jpRuby: "<ruby>引<rt>ひ</rt></ruby>っ<ruby>越<rt>こ</rt></ruby>し<ruby>当日<rt>とうじつ</rt></ruby>は<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>らないといいのですが。",
+            reading: "ひっこし とうじつは あめが ふらないと いいのですが。",
+            pt: "Eu espero que no dia da mudança não chova…",
+            grammar: "〜といい = tomara que… (desejo).",
+            vocab: [
+              { w:"当日", r:"とうじつ", m:"no dia (do evento)" },
+              { w:"降る", r:"ふる", m:"chover" }
+            ]
+          },
+          {
+            jp: "もし雨が降ったら、荷物がぬれないようにカバーを使います。",
+            jpRuby: "もし<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>ったら、<ruby>荷物<rt>にもつ</rt></ruby>がぬれないようにカバーを<ruby>使<rt>つか</rt></ruby>います。",
+            reading: "もし あめが ふったら、にもつが ぬれないように かばーを つかいます。",
+            pt: "Se chover, vou usar uma capa para que a bagagem não molhe.",
+            grammar: "もし〜たら = se…; 〜ないように = para não…",
+            vocab: [
+              { w:"荷物", r:"にもつ", m:"bagagem" },
+              { w:"ぬれる", r:"ぬれる", m:"molhar" },
+              { w:"使う", r:"つかう", m:"usar" }
+            ]
+          },
+          {
+            jp: "新しい町では、少しずつ友だちを作っていきたいです。",
+            jpRuby: "<ruby>新<rt>あたら</rt></ruby>しい<ruby>町<rt>まち</rt></ruby>では、<ruby>少<rt>すこ</rt></ruby>しずつ<ruby>友<rt>とも</rt></ruby>だちを<ruby>作<rt>つく</rt></ruby>っていきたいです。",
+            reading: "あたらしい まちでは、すこしずつ ともだちを つくって いきたいです。",
+            pt: "Na nova cidade, quero ir fazendo amigos aos poucos.",
+            grammar: "〜ていく = ir avançando / construção gradual; 〜たい = desejo.",
+            vocab: [
+              { w:"町", r:"まち", m:"cidade/bairro" },
+              { w:"少しずつ", r:"すこしずつ", m:"aos poucos" },
+              { w:"作る", r:"つくる", m:"fazer/criar" }
+            ]
+          },
+          {
+            jp: "落ち着いたら、前の会社の人にも連絡してみます。",
+            jpRuby: "<ruby>落<rt>お</rt></ruby>ち<ruby>着<rt>つ</rt></ruby>いたら、<ruby>前<rt>まえ</rt></ruby>の<ruby>会社<rt>かいしゃ</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>にも<ruby>連絡<rt>れんらく</rt></ruby>してみます。",
+            reading: "おちついたら、まえの かいしゃの ひとにも れんらくして みます。",
+            pt: "Quando eu me estabilizar, vou tentar entrar em contato com o pessoal da empresa anterior também.",
+            grammar: "〜たら = quando/se; 〜てみる = tentar.",
+            vocab: [
+              { w:"落ち着く", r:"おちつく", m:"se acalmar/estabilizar" },
+              { w:"会社", r:"かいしゃ", m:"empresa" },
+              { w:"〜てみる", r:"〜てみる", m:"tentar fazer" }
             ]
           }
         ]
@@ -1181,39 +1190,21 @@
     /***********************
      * STATE + STORAGE
      ***********************/
-    const LS_KEY = "nihongo_textlab_v1";
+    const LS_KEY = "nihongo_textlab_v2";
     const defaultState = {
-      texts: [],            // custom texts
+      texts: [],
       activeTextId: null,
       ui: {
         tab: "TAB_TEXT",
         showFurigana: true,
         showReading: true,
-        fontScale: 1
+        fontScale: 1,
+        hue: 200,
+        levelView: "N5"
       },
-      progress: {
-        // [textId]: { doneLines: { [idx]: true }, bookmarked: boolean, notes: string }
-      },
-      deck: {
-        // wordKey: { w,r,m, due:number, ease:number, streak:number, last:number, seen:number }
-      }
+      progress: {},
+      deck: {}
     };
-
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(LS_KEY);
-        if(!raw) return structuredClone(defaultState);
-        const parsed = JSON.parse(raw);
-        return mergeDeep(structuredClone(defaultState), parsed);
-      }catch(e){
-        console.warn("loadState failed", e);
-        return structuredClone(defaultState);
-      }
-    }
-    function saveState(){
-      localStorage.setItem(LS_KEY, JSON.stringify(state));
-      refreshKPIs();
-    }
 
     function mergeDeep(target, source){
       if(typeof source !== "object" || source === null) return target;
@@ -1229,7 +1220,23 @@
       return target;
     }
 
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        return mergeDeep(structuredClone(defaultState), parsed);
+      }catch(e){
+        return structuredClone(defaultState);
+      }
+    }
+
     let state = loadState();
+
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      refreshKPIs();
+    }
 
     /***********************
      * HELPERS
@@ -1239,7 +1246,6 @@
     const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
 
     function allTexts(){
-      // built-ins + custom
       return [...builtInTexts, ...(state.texts || [])];
     }
 
@@ -1262,6 +1268,15 @@
       }[m]));
     }
 
+    function shuffle(a){
+      const arr = a.slice();
+      for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
     /***********************
      * THEME ANIMATION
      ***********************/
@@ -1271,27 +1286,47 @@
       setInterval(()=>{
         hue = (hue + 9) % 360;
         document.documentElement.style.setProperty("--hue", hue);
-        if(state.ui) state.ui.hue = hue;
+        state.ui.hue = hue;
         if(label) label.textContent = `hsl(${hue})`;
+        saveState();
       }, 3500);
       document.documentElement.style.setProperty("--hue", hue);
       if(label) label.textContent = `hsl(${hue})`;
     }
 
     /***********************
-     * RENDER: LIBRARY
+     * LEVEL VIEW (N5/N4)
+     ***********************/
+    function setLevelView(level){
+      state.ui.levelView = level;
+      // toggle segmented ui
+      $("#segN5").classList.toggle("active", level==="N5");
+      $("#segN4").classList.toggle("active", level==="N4");
+      saveState();
+      renderLibrary();
+      // se texto ativo não bater no nível, troca automaticamente
+      const active = getTextById(state.activeTextId);
+      if(!active || active.level !== level){
+        const first = allTexts().find(t=>t.level===level);
+        state.activeTextId = first ? first.id : null;
+        saveState();
+      }
+      renderMain();
+    }
+
+    /***********************
+     * RENDER: LIBRARY (separado por nível via botões)
      ***********************/
     function renderLibrary(){
       const list = $("#libraryList");
-      const level = $("#levelFilter").value;
       const q = $("#searchInput").value.trim().toLowerCase();
+      const level = state.ui.levelView || "N5";
 
       const texts = allTexts()
-        .filter(t => level === "ALL" ? true : t.level === level)
+        .filter(t => t.level === level)
         .filter(t => {
           if(!q) return true;
-          const hay = `${t.title} ${t.desc} ${(t.tags||[]).join(" ")} ` +
-                      (t.lines||[]).map(l=>l.jp).join(" ");
+          const hay = `${t.title} ${t.desc} ${(t.tags||[]).join(" ")} ${(t.lines||[]).map(l=>l.jp).join(" ")}`;
           return hay.toLowerCase().includes(q);
         });
 
@@ -1318,7 +1353,7 @@
             </div>
           </div>
         `;
-      }).join("") || `<div class="muted" style="font-size:12px">Nada encontrado.</div>`;
+      }).join("") || `<div class="muted" style="font-size:12px">Nenhum texto encontrado neste nível.</div>`;
 
       $$(".item", list).forEach(el=>{
         el.addEventListener("click", ()=>{
@@ -1345,21 +1380,52 @@
       renderMain();
     }
 
+    function applyFontScale(scale){
+      state.ui.fontScale = clamp(scale, 0.85, 1.25);
+      document.documentElement.style.setProperty("--fontScale", state.ui.fontScale);
+      saveState();
+    }
+
+    function syncToggleButtons(){
+      const f = state.ui.showFurigana ? "ON" : "OFF";
+      const r = state.ui.showReading ? "ON" : "OFF";
+      ["#btnToggleFuri","#btnToggleFuri2","#btnToggleFuriFocus"].forEach(id=>{
+        const b = $(id); if(b) b.textContent = `Furigana: ${f}`;
+      });
+      ["#btnToggleReading","#btnToggleReading2","#btnToggleReadingFocus"].forEach(id=>{
+        const b = $(id); if(b) b.textContent = `Leitura: ${r}`;
+      });
+      $("#segN5").classList.toggle("active", (state.ui.levelView||"N5")==="N5");
+      $("#segN4").classList.toggle("active", (state.ui.levelView||"N5")==="N4");
+    }
+
+    function toggleFurigana(){
+      state.ui.showFurigana = !state.ui.showFurigana;
+      saveState();
+      syncToggleButtons();
+      renderMain();
+    }
+
+    function toggleReading(){
+      state.ui.showReading = !state.ui.showReading;
+      saveState();
+      syncToggleButtons();
+      renderMain();
+    }
+
+    function fontPlus(){ applyFontScale((state.ui.fontScale||1) + 0.05); renderMain(); }
+    function fontMinus(){ applyFontScale((state.ui.fontScale||1) - 0.05); renderMain(); }
+
     function renderMain(){
       const text = getTextById(state.activeTextId);
       const empty = $("#emptyState");
 
-      // controls global
-      applyFontScale(state.ui.fontScale);
+      applyFontScale(state.ui.fontScale || 1);
       syncToggleButtons();
 
       if(!text){
         empty.style.display = "block";
-        $("#tab_TEXT").style.display = "none";
-        $("#tab_VOCAB").style.display = "none";
-        $("#tab_FLASH").style.display = "none";
-        $("#tab_QUIZ").style.display = "none";
-        $("#tab_NOTES").style.display = "none";
+        ["#tab_TEXT","#tab_VOCAB","#tab_FLASH","#tab_QUIZ","#tab_NOTES"].forEach(id=>$(id).style.display="none");
         $("#textTitle").textContent = "Selecione um texto";
         $("#textMeta").innerHTML = "";
         return;
@@ -1371,14 +1437,12 @@
       const p = ensureProgress(text.id);
 
       $("#textMeta").innerHTML = `
-        <span class="tag">📘 <b>${escapeHTML(text.level)}</b></span>
+        <span class="tag"><b>${escapeHTML(text.level)}</b></span>
         <span class="tag">🧾 ${text.lines.length} linhas</span>
         <span class="tag">✅ ${Object.keys(p.doneLines||{}).length} revisadas</span>
         <span class="tag">${p.bookmarked ? "★ Favorito" : "☆ Não favorito"}</span>
-        ${(text.tags||[]).slice(0,3).map(t=>`<span class="tag">#${escapeHTML(t)}</span>`).join("")}
       `;
 
-      // tabs show/hide
       const tab = state.ui.tab || "TAB_TEXT";
       const map = {
         TAB_TEXT: "#tab_TEXT",
@@ -1394,27 +1458,30 @@
         t.classList.toggle("active", t.dataset.tab === tab);
       });
 
-      // render each tab content
       renderLines(text, $("#lineList"));
-      renderLines(text, $("#focusLineList"), { isFocus:true });
-
+      renderLines(text, $("#focusLineList"));
       renderVocab(text);
       renderNotes(text);
       renderDeckUI();
-      // quiz not auto-generated
     }
 
-    function renderLines(text, root, opts={}){
+    function renderLines(text, root){
       const p = ensureProgress(text.id);
       const showF = !!state.ui.showFurigana;
       const showR = !!state.ui.showReading;
 
       root.innerHTML = text.lines.map((ln, idx)=>{
         const done = !!p.doneLines?.[idx];
-        const jp = showF && ln.jpRuby ? ln.jpRuby : escapeHTML(ln.jp);
+
+        // ✅ Se tiver jpRuby, usamos como HTML (com <ruby> correto).
+        // Se não, usamos texto escapado.
+        const jpHTML = (showF && ln.jpRuby) ? ln.jpRuby : escapeHTML(ln.jp);
+
         const reading = showR ? `<div class="reading">${escapeHTML(ln.reading||"")}</div>` : "";
 
-        const vocabChips = (ln.vocab||[]).slice(0,8).map(v=>`<span class="tag" title="${escapeHTML(v.r)} • ${escapeHTML(v.m)}">${escapeHTML(v.w)}</span>`).join("");
+        const vocabChips = (ln.vocab||[]).slice(0,10).map(v=>
+          `<span class="tag" title="${escapeHTML(v.r)} • ${escapeHTML(v.m)}">${escapeHTML(v.w)}</span>`
+        ).join("");
 
         const noteKey = `lineNote_${text.id}_${idx}`;
         const lineNote = (state.progress[text.id]?.[noteKey]) || "";
@@ -1423,9 +1490,9 @@
           <div class="lineCard" data-idx="${idx}">
             <div class="lineTop">
               <div class="lineLeft">
-                <p class="jp">${jp}</p>
+                <p class="jp">${jpHTML}</p>
                 ${reading}
-                <div class="row" style="margin-top:8px">${vocabChips || `<span class="muted" style="font-size:12px">Sem vocab marcado nesta linha.</span>`}</div>
+                <div class="row" style="margin-top:8px">${vocabChips || `<span class="muted" style="font-size:12px">Sem vocab nesta linha.</span>`}</div>
               </div>
               <div class="lineBadges">
                 <label class="chk" title="Marque quando revisar esta linha">
@@ -1440,11 +1507,11 @@
               <div class="notes">
                 <div class="box">
                   <div class="boxTitle"><b>Tradução (PT)</b></div>
-                  <p class="pt">${escapeHTML(ln.pt || "—")}</p>
+                  <p>${escapeHTML(ln.pt || "—")}</p>
                 </div>
 
                 <div class="box">
-                  <div class="boxTitle"><b>Gramática / Pontos de atenção</b></div>
+                  <div class="boxTitle"><b>Gramática</b></div>
                   <p>${escapeHTML(ln.grammar || "—")}</p>
                 </div>
 
@@ -1454,13 +1521,13 @@
                     ${(ln.vocab||[]).map(v=>`<span class="tag" style="margin:4px 6px 0 0">🧩 <b>${escapeHTML(v.w)}</b> ${escapeHTML(v.r)} • ${escapeHTML(v.m)}</span>`).join("") || "—"}
                   </p>
                   <div class="row" style="margin-top:10px">
-                    <button class="btn" data-action="addLineVocab">+ Deck (toda a linha)</button>
+                    <button class="btn" data-action="addLineVocab">+ Deck (linha)</button>
                     <button class="btn" data-action="copyJP">Copiar JP</button>
                   </div>
                 </div>
 
                 <div class="box">
-                  <div class="boxTitle"><b>Minha nota desta linha</b></div>
+                  <div class="boxTitle"><b>Minha nota</b></div>
                   <textarea class="textarea" data-action="lineNote" placeholder="Escreva aqui (auto-save)..." style="min-height:84px">${escapeHTML(lineNote)}</textarea>
                 </div>
               </div>
@@ -1469,7 +1536,6 @@
         `;
       }).join("");
 
-      // bind
       $$(".lineCard", root).forEach(card=>{
         const idx = Number(card.getAttribute("data-idx"));
         const chk = $("input[type=checkbox]", card);
@@ -1481,20 +1547,20 @@
           else delete pr.doneLines[idx];
           saveState();
           refreshKPIs();
-          // update meta
-          $("#textMeta").innerHTML = $("#textMeta").innerHTML; // noop-ish
           renderLibrary();
-          // (não re-render tudo pra evitar perder abertura)
+          // meta refresh leve
+          const p2 = ensureProgress(text.id);
+          $("#textMeta").innerHTML = `
+            <span class="tag"><b>${escapeHTML(text.level)}</b></span>
+            <span class="tag">🧾 ${text.lines.length} linhas</span>
+            <span class="tag">✅ ${Object.keys(p2.doneLines||{}).length} revisadas</span>
+            <span class="tag">${p2.bookmarked ? "★ Favorito" : "☆ Não favorito"}</span>
+          `;
         });
 
-        btnToggle.addEventListener("click", ()=>{
-          card.classList.toggle("open");
-        });
-
-        // clicking JP area toggles too (nice UX)
+        btnToggle.addEventListener("click", ()=> card.classList.toggle("open"));
         $(".jp", card).addEventListener("click", ()=> card.classList.toggle("open"));
 
-        // line note autosave
         const noteArea = $("[data-action=lineNote]", card);
         noteArea.addEventListener("input", ()=>{
           const key = `lineNote_${text.id}_${idx}`;
@@ -1502,25 +1568,34 @@
           saveState();
         });
 
-        // actions
-        const btnAdd = $("[data-action=addLineVocab]", card);
-        btnAdd.addEventListener("click", ()=>{
-          const ln = text.lines[idx];
-          addVocabToDeck(ln.vocab||[]);
+        $("[data-action=addLineVocab]", card).addEventListener("click", ()=>{
+          addVocabToDeck(text.lines[idx].vocab||[]);
           renderDeckUI();
           refreshKPIs();
+          toast("Adicionado ao deck ✅");
         });
 
-        const btnCopy = $("[data-action=copyJP]", card);
-        btnCopy.addEventListener("click", async ()=>{
+        $("[data-action=copyJP]", card).addEventListener("click", async ()=>{
           try{
             await navigator.clipboard.writeText(text.lines[idx].jp);
             toast("JP copiado ✅");
           }catch{
-            toast("Não foi possível copiar (permissão).");
+            toast("Não foi possível copiar.");
           }
         });
       });
+    }
+
+    function aggregateVocab(text){
+      const map = new Map();
+      for(const ln of (text.lines||[])){
+        for(const v of (ln.vocab||[])){
+          const k = wordKey(v);
+          if(!map.has(k)) map.set(k, { ...v, count: 0 });
+          map.get(k).count += 1;
+        }
+      }
+      return Array.from(map.values()).sort((a,b)=>b.count-a.count || a.w.localeCompare(b.w));
     }
 
     function renderVocab(text){
@@ -1541,9 +1616,7 @@
               <p class="w">${escapeHTML(v.w)}</p>
               <div class="r">${escapeHTML(v.r)}</div>
               <div class="m">${escapeHTML(v.m)}</div>
-              <div style="margin-top:8px">
-                <span class="tag" title="Ocorrências no texto">📍 ${v.count}x</span>
-              </div>
+              <div style="margin-top:8px"><span class="tag">📍 ${v.count}x</span></div>
             </div>
             <div class="vocabRight">
               <button class="btn ${inDeck ? "" : "btnPrimary"}" data-add="${escapeHTML(k)}">
@@ -1563,7 +1636,7 @@
           renderVocab(text);
           renderDeckUI();
           refreshKPIs();
-          toast("Adicionado ao deck ✅");
+          toast("Adicionado ✅");
         });
       });
 
@@ -1575,7 +1648,7 @@
           renderVocab(text);
           renderDeckUI();
           refreshKPIs();
-          toast("Removido do deck.");
+          toast("Removido.");
         });
       });
     }
@@ -1591,29 +1664,14 @@
     }
 
     /***********************
-     * VOCAB AGGREGATION + DECK
+     * DECK
      ***********************/
-    function aggregateVocab(text){
-      const map = new Map();
-      for(const ln of (text.lines||[])){
-        for(const v of (ln.vocab||[])){
-          const k = wordKey(v);
-          if(!map.has(k)) map.set(k, { ...v, count: 0 });
-          map.get(k).count += 1;
-        }
-      }
-      return Array.from(map.values()).sort((a,b)=>b.count-a.count || a.w.localeCompare(b.w));
-    }
-
     function addVocabToDeck(arr){
       const now = Date.now();
       for(const v of arr){
         const k = wordKey(v);
         if(!state.deck[k]){
-          state.deck[k] = {
-            w: v.w, r: v.r, m: v.m,
-            due: now, ease: 2.2, streak: 0, last: 0, seen: 0
-          };
+          state.deck[k] = { w:v.w, r:v.r, m:v.m, due: now, ease: 2.2, streak: 0, last: 0, seen: 0 };
         }
       }
       saveState();
@@ -1634,7 +1692,6 @@
         currentCardKey = wordKey(due[0]);
         return state.deck[currentCardKey];
       }
-      // if none due, pick soonest
       const all = Object.values(state.deck);
       if(!all.length){ currentCardKey = null; return null; }
       all.sort((a,b)=>(a.due??0)-(b.due??0));
@@ -1645,11 +1702,6 @@
     function renderDeckUI(){
       const card = pickNextCard();
       const flash = $("#flashCard");
-      const front = $("#flashFront");
-      const reading = $("#flashReading");
-      const meaning = $("#flashMeaning");
-      const status = $("#deckStatus");
-
       flash.classList.remove("revealed");
 
       const total = Object.keys(state.deck).length;
@@ -1658,31 +1710,26 @@
       $("#kpiDeck").textContent = total;
 
       if(!card){
-        front.textContent = "—";
-        reading.textContent = "";
-        meaning.textContent = "Adicione palavras ao deck na aba Vocabulário.";
-        status.textContent = `Deck vazio.`;
+        $("#flashFront").textContent = "—";
+        $("#flashReading").textContent = "";
+        $("#flashMeaning").textContent = "Adicione palavras ao deck na aba Vocabulário.";
+        $("#deckStatus").textContent = `Deck vazio.`;
         return;
       }
 
-      front.textContent = card.w;
-      reading.textContent = card.r || "";
-      meaning.textContent = card.m || "";
-      status.textContent = `Cards: ${total} • Devidos agora: ${dueCount} • Próximo: ${new Date(card.due).toLocaleString()}`;
+      $("#flashFront").textContent = card.w;
+      $("#flashReading").textContent = card.r || "";
+      $("#flashMeaning").textContent = card.m || "";
+      $("#deckStatus").textContent = `Cards: ${total} • Devidos agora: ${dueCount}`;
     }
 
     function rateCard(score){
-      // score 1..3
       if(!currentCardKey || !state.deck[currentCardKey]) return;
       const c = state.deck[currentCardKey];
       const now = Date.now();
       c.seen = (c.seen||0) + 1;
       c.last = now;
 
-      // Very lightweight scheduling:
-      // score 1: reset streak, due soon
-      // score 2: modest interval
-      // score 3: expand interval more
       const base = 60 * 60 * 1000; // 1h
       let interval;
       if(score === 1){
@@ -1716,7 +1763,7 @@
         if(text) pool = aggregateVocab(text).map(x=>({ w:x.w, r:x.r, m:x.m }));
       }
       pool = pool.filter(x=>x.w && x.m);
-      // unique by wordKey
+
       const uniq = new Map();
       for(const v of pool) uniq.set(wordKey(v), v);
       const arr = Array.from(uniq.values());
@@ -1733,7 +1780,7 @@
       const items = buildQuizItems(src, count);
 
       if(items.length < 3){
-        wrap.innerHTML = `<div class="muted" style="font-size:12px;margin-top:12px">Não há vocabulário suficiente para montar um quiz (mínimo ~3). Adicione mais palavras ao deck ou use um texto com mais vocab.</div>`;
+        wrap.innerHTML = `<div class="muted" style="font-size:12px;margin-top:12px">Não há vocabulário suficiente para montar um quiz (mínimo ~3).</div>`;
         return;
       }
 
@@ -1747,7 +1794,7 @@
         const el = document.createElement("div");
         el.className = "quizQ";
         el.innerHTML = `
-          <h3>Q${idx+1}. O que significa <span style="font-family:var(--jp);font-weight:900">${escapeHTML(it.w)}</span> (${escapeHTML(it.r||"")})?</h3>
+          <h3>Q${idx+1}. O que significa <span style="font-family:var(--jp);font-weight:1000">${escapeHTML(it.w)}</span> (${escapeHTML(it.r||"")})?</h3>
           <div class="choices">
             ${choices.map(c=>`
               <div class="choice" data-c="${escapeHTML(c)}" data-correct="${escapeHTML(correct)}">
@@ -1763,7 +1810,6 @@
           ch.addEventListener("click", ()=>{
             const picked = ch.getAttribute("data-c");
             const corr = ch.getAttribute("data-correct");
-            // lock
             $$(".choice", el).forEach(x=>x.style.pointerEvents="none");
             $$(".choice", el).forEach(x=>{
               const val = x.getAttribute("data-c");
@@ -1774,52 +1820,6 @@
         });
       });
     }
-
-    function shuffle(a){
-      const arr = a.slice();
-      for(let i=arr.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-      }
-      return arr;
-    }
-
-    /***********************
-     * UI TOGGLES / FONT
-     ***********************/
-    function applyFontScale(scale){
-      state.ui.fontScale = clamp(scale, 0.85, 1.25);
-      document.documentElement.style.setProperty("--fontScale", state.ui.fontScale);
-      saveState();
-    }
-
-    function syncToggleButtons(){
-      const f = state.ui.showFurigana ? "ON" : "OFF";
-      const r = state.ui.showReading ? "ON" : "OFF";
-      ["#btnToggleFuri","#btnToggleFuri2","#btnToggleFuriFocus"].forEach(id=>{
-        const b = $(id); if(b) b.textContent = `Furigana: ${f}`;
-      });
-      ["#btnToggleReading","#btnToggleReading2","#btnToggleReadingFocus"].forEach(id=>{
-        const b = $(id); if(b) b.textContent = `Leitura: ${r}`;
-      });
-    }
-
-    function toggleFurigana(){
-      state.ui.showFurigana = !state.ui.showFurigana;
-      saveState();
-      syncToggleButtons();
-      renderMain();
-    }
-
-    function toggleReading(){
-      state.ui.showReading = !state.ui.showReading;
-      saveState();
-      syncToggleButtons();
-      renderMain();
-    }
-
-    function fontPlus(){ applyFontScale((state.ui.fontScale||1) + 0.05); renderMain(); }
-    function fontMinus(){ applyFontScale((state.ui.fontScale||1) - 0.05); renderMain(); }
 
     /***********************
      * BOOKMARK / BULK OPEN
@@ -1832,7 +1832,7 @@
       saveState();
       renderLibrary();
       renderMain();
-      toast(p.bookmarked ? "Favoritado ★" : "Desfavoritado ☆");
+      toast(p.bookmarked ? "Favoritado ★" : "Removido ☆");
     }
 
     function expandAll(){
@@ -1860,39 +1860,24 @@
       const desc  = $("#newDesc").value.trim();
       const raw   = $("#newRaw").value.replace(/\r/g,"").trim();
 
-      if(!title || !raw){
-        toast("Preencha pelo menos Título e Texto.");
-        return;
-      }
+      if(!title || !raw){ toast("Preencha Título e Texto."); return; }
 
       const lines = raw.split("\n")
         .map(s=>s.trim())
         .filter(Boolean)
-        .map(s=>({
-          jp: s,
-          jpRuby: "", // você pode preencher depois, se quiser
-          reading: "",
-          pt: "",
-          grammar: "",
-          vocab: []
-        }));
+        .map(s=>({ jp:s, jpRuby:"", reading:"", pt:"", grammar:"", vocab:[] }));
 
-      const text = {
-        id: makeId("custom"),
-        level,
-        title,
-        desc,
-        tags: ["custom"],
-        lines
-      };
-
+      const text = { id: makeId("custom"), level, title, desc, tags:["custom"], lines };
       state.texts.push(text);
       saveState();
+
       closeModal("#modalNew");
-      // clear
       $("#newTitle").value = "";
       $("#newDesc").value = "";
       $("#newRaw").value = "";
+
+      // troca para o nível do texto criado
+      setLevelView(level);
       setActiveText(text.id);
       toast("Texto criado ✅");
     }
@@ -1902,7 +1887,7 @@
      ***********************/
     function exportAll(){
       const payload = {
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         texts: state.texts,
         state: {
@@ -1913,7 +1898,6 @@
         }
       };
       const json = JSON.stringify(payload, null, 2);
-      // download via blob
       const blob = new Blob([json], {type:"application/json"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1931,7 +1915,6 @@
       if(!raw){ toast("Cole um JSON válido."); return; }
       try{
         const parsed = JSON.parse(raw);
-        // merge: texts concat by id unique
         const incomingTexts = parsed.texts || [];
         const existing = new Map((state.texts||[]).map(t=>[t.id,t]));
         for(const t of incomingTexts){
@@ -1941,7 +1924,6 @@
         }
         state.texts = Array.from(existing.values());
 
-        // merge state buckets
         const incState = parsed.state || {};
         state.ui = mergeDeep(state.ui, incState.ui || {});
         state.progress = mergeDeep(state.progress, incState.progress || {});
@@ -1950,6 +1932,7 @@
 
         saveState();
         closeModal("#modalImport");
+        syncToggleButtons();
         renderLibrary();
         renderMain();
         toast("Importado ✅");
@@ -1958,9 +1941,8 @@
       }
     }
 
-    function resetPartial(){
-      // keep texts, wipe progress + ui minimal + deck optional? We'll wipe progress only.
-      if(!confirm("Resetar progresso (linhas revisadas, favoritos e notas)? O deck e os textos serão mantidos.")) return;
+    function resetProgress(){
+      if(!confirm("Resetar progresso (revisadas, favoritos e notas)? Deck e textos ficam.")) return;
       state.progress = {};
       saveState();
       renderLibrary();
@@ -1972,11 +1954,9 @@
      * KPI
      ***********************/
     function refreshKPIs(){
-      // lines done total across all texts (built-ins + custom)
       let doneTotal = 0;
       for(const tid of Object.keys(state.progress||{})){
-        const p = state.progress[tid];
-        doneTotal += Object.keys(p.doneLines||{}).length;
+        doneTotal += Object.keys(state.progress[tid].doneLines||{}).length;
       }
       $("#kpiLinesDone").textContent = doneTotal;
       $("#kpiDeck").textContent = Object.keys(state.deck||{}).length;
@@ -1988,7 +1968,7 @@
     let toastTimer = null;
     function toast(msg){
       clearTimeout(toastTimer);
-      let el = $("#toast");
+      let el = document.getElementById("toast");
       if(!el){
         el = document.createElement("div");
         el.id = "toast";
@@ -2001,11 +1981,10 @@
         el.style.border = "1px solid rgba(255,255,255,.18)";
         el.style.background = "rgba(0,0,0,.45)";
         el.style.backdropFilter = "blur(10px)";
-        el.style.webkitBackdropFilter = "blur(10px)";
         el.style.boxShadow = "0 18px 55px rgba(0,0,0,.40)";
         el.style.color = "rgba(234,240,255,.92)";
         el.style.fontSize = "12px";
-        el.style.fontWeight = "800";
+        el.style.fontWeight = "900";
         el.style.zIndex = "80";
         document.body.appendChild(el);
       }
@@ -2015,19 +1994,20 @@
     }
 
     /***********************
-     * EVENTS
+     * EVENTS + INIT
      ***********************/
     function bindEvents(){
-      // tabs
       $$(".tab").forEach(t=>{
         t.addEventListener("click", ()=> setTab(t.dataset.tab));
       });
 
-      // library controls
-      $("#levelFilter").addEventListener("change", renderLibrary);
       $("#searchInput").addEventListener("input", renderLibrary);
 
-      // global toggles (home)
+      // segmented
+      $("#segN5").addEventListener("click", ()=> setLevelView("N5"));
+      $("#segN4").addEventListener("click", ()=> setLevelView("N4"));
+
+      // toggles
       $("#btnToggleFuri").addEventListener("click", toggleFurigana);
       $("#btnToggleFuri2").addEventListener("click", toggleFurigana);
       $("#btnToggleFuriFocus").addEventListener("click", toggleFurigana);
@@ -2045,25 +2025,16 @@
       $("#btnFontMinusFocus").addEventListener("click", fontMinus);
 
       $("#btnBookmark").addEventListener("click", toggleBookmark);
-
       $("#btnExpandAll").addEventListener("click", expandAll);
       $("#btnCollapseAll").addEventListener("click", collapseAll);
 
       // focus
-      $("#btnFocus").addEventListener("click", ()=>{
-        $("#focusOverlay").classList.add("open");
-      });
-      $("#btnExitFocus").addEventListener("click", ()=>{
-        $("#focusOverlay").classList.remove("open");
-      });
+      $("#btnFocus").addEventListener("click", ()=> $("#focusOverlay").classList.add("open"));
+      $("#btnExitFocus").addEventListener("click", ()=> $("#focusOverlay").classList.remove("open"));
 
       // deck
-      $("#btnReveal").addEventListener("click", ()=>{
-        $("#flashCard").classList.toggle("revealed");
-      });
-      $("#btnNext").addEventListener("click", ()=>{
-        renderDeckUI();
-      });
+      $("#btnReveal").addEventListener("click", ()=> $("#flashCard").classList.toggle("revealed"));
+      $("#btnNext").addEventListener("click", renderDeckUI);
       $("#btnRate1").addEventListener("click", ()=> rateCard(1));
       $("#btnRate2").addEventListener("click", ()=> rateCard(2));
       $("#btnRate3").addEventListener("click", ()=> rateCard(3));
@@ -2099,16 +2070,12 @@
       $("#btnCloseModalImport").addEventListener("click", ()=> closeModal("#modalImport"));
       $("#btnDoImport").addEventListener("click", doImport);
 
-      $("#btnReset").addEventListener("click", resetPartial);
+      $("#btnReset").addEventListener("click", resetProgress);
 
-      // close modal by clicking outside
       ["#modalNew", "#modalImport"].forEach(mid=>{
-        $(mid).addEventListener("click", (e)=>{
-          if(e.target === $(mid)) closeModal(mid);
-        });
+        $(mid).addEventListener("click", (e)=>{ if(e.target === $(mid)) closeModal(mid); });
       });
 
-      // keyboard shortcuts
       window.addEventListener("keydown", (e)=>{
         if(e.key === "Escape"){
           $("#modalNew").classList.remove("open");
@@ -2118,25 +2085,27 @@
       });
     }
 
-    /***********************
-     * INIT
-     ***********************/
     function init(){
-      // defaults if missing
       state.texts = state.texts || [];
       state.progress = state.progress || {};
       state.deck = state.deck || {};
-      state.ui = mergeDeep({ tab:"TAB_TEXT", showFurigana:true, showReading:true, fontScale:1, hue:200 }, state.ui || {});
+      state.ui = mergeDeep({ tab:"TAB_TEXT", showFurigana:true, showReading:true, fontScale:1, hue:200, levelView:"N5" }, state.ui || {});
       applyFontScale(state.ui.fontScale || 1);
 
       startTheme();
       bindEvents();
 
-      // pick first text if none selected
+      // set level view
+      setLevelView(state.ui.levelView || "N5");
+
+      // pick first text if none
       if(!state.activeTextId){
-        state.activeTextId = builtInTexts[0].id;
+        const first = allTexts().find(t=>t.level === (state.ui.levelView||"N5"));
+        state.activeTextId = first ? first.id : null;
+        saveState();
       }
-      ensureProgress(state.activeTextId);
+
+      if(state.activeTextId) ensureProgress(state.activeTextId);
 
       renderLibrary();
       renderMain();
