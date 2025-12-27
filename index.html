@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -591,36 +590,6 @@
     .choice.bad{ border-color: rgba(255,80,120,.35); background: rgba(255,80,120,.10); }
     .choice small{ color: var(--muted); }
 
-    .modal{
-      position:fixed; inset:0;
-      background: rgba(0,0,0,.45);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 14px;
-      z-index: 50;
-    }
-    .modal.open{ display:flex; }
-    .modalCard{
-      width: min(980px, 100%);
-      max-height: 88vh;
-      overflow:auto;
-      border-radius: 22px;
-      border: 1px solid var(--stroke);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.70));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      padding: 14px;
-      color: var(--text);
-    }
-    body.theme-dark .modalCard{
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
-      color: var(--text);
-    }
-    .modalCard h2{ margin: 0 0 10px; font-size: 16px; }
-    .modalCard .help{ color: var(--muted); font-size: 12px; margin: 0 0 12px; line-height: 1.45; }
-
     .focus{
       position:fixed; inset:0;
       background:
@@ -668,7 +637,8 @@
         </div>
         <div class="row">
           <button class="btn" id="btnTheme">Aparência: Claro</button>
-          <div class="pill" title="Tema muda com o tempo">⚡ <span id="themeLabel">hsl(210)</span></div>
+          <!-- removido: texto hsl(...) -->
+          <div class="pill" title="Tema muda com o tempo">⚡ Tema dinâmico</div>
         </div>
       </div>
 
@@ -681,23 +651,12 @@
           </div>
 
           <div class="row">
-            <button class="btn btnPrimary" id="btnNewText">
-              <span class="ic" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
-              </span>
-              Criar texto
-            </button>
+            <!-- removido: Criar texto / Importar -->
             <button class="btn" id="btnExport">
               <span class="ic" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18-5 5h3v6h4V7h3l-5-5z"/></svg>
               </span>
               Exportar
-            </button>
-            <button class="btn" id="btnImport">
-              <span class="ic" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M19 15v4H5v-4H3v6h18v-6h-2zM11 3v6H8l4 4 4-4h-3V3h-2z"/></svg>
-              </span>
-              Importar
             </button>
           </div>
 
@@ -924,48 +883,6 @@
         <div class="lineList" id="focusLineList"></div>
       </div>
     </section>
-  </div>
-
-  <!-- Modal: New Text -->
-  <div class="modal" id="modalNew">
-    <div class="modalCard">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2>Adicionar texto</h2>
-        <button class="btn" id="btnCloseModalNew">Fechar</button>
-      </div>
-      <p class="help">
-        Cole o texto em japonês (uma frase por linha). Depois você pode preencher leitura/tradução/estrutura.
-      </p>
-
-      <div class="row">
-        <input class="input" id="newTitle" placeholder="Título (ex.: 買い物)" />
-        <select class="select" id="newLevel" style="max-width:140px">
-          <option value="N5">N5</option>
-          <option value="N4">N4</option>
-        </select>
-      </div>
-      <input class="input" id="newDesc" placeholder="Descrição (opcional)" />
-      <textarea class="textarea" id="newRaw" placeholder="Cole aqui (1 frase por linha)"></textarea>
-
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn btnPrimary" id="btnCreateText">Criar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Import -->
-  <div class="modal" id="modalImport">
-    <div class="modalCard">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2>Importar (JSON)</h2>
-        <button class="btn" id="btnCloseModalImport">Fechar</button>
-      </div>
-      <p class="help">Cole o JSON exportado. Isso mescla textos + progresso + deck.</p>
-      <textarea class="textarea" id="importArea" placeholder='{ "texts":[...], "state":{...} }'></textarea>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn btnPrimary" id="btnDoImport">Importar</button>
-      </div>
-    </div>
   </div>
 
   <script>
@@ -1445,7 +1362,7 @@
      ***********************/
     const LS_KEY = "nihongo_textlab_v4";
     const defaultState = {
-      texts: [],
+      texts: [],              // mantido (compatibilidade), mas sem UI de criação/importação
       activeTextId: null,
       ui: {
         tab: "TAB_TEXT",
@@ -1541,7 +1458,7 @@
       return arr;
     }
 
-    // ✅ EXIBIÇÃO EM PT-BR (sem japones, sem (他)/(自))
+    // ✅ EXIBIÇÃO EM PT-BR
     function vtLabel(vt){
       if(vt === "他") return "Verbo transitivo";
       if(vt === "自") return "Verbo intransitivo";
@@ -1565,7 +1482,6 @@
     }
 
     function startTheme(){
-      const label = $("#themeLabel");
       let hue = state.ui?.hue ?? 210;
       let tick = 0;
 
@@ -1573,14 +1489,12 @@
         hue = (hue + 9) % 360;
         document.documentElement.style.setProperty("--hue", hue);
         state.ui.hue = hue;
-        if(label) label.textContent = `hsl(${hue})`;
 
         tick++;
         if(tick % 10 === 0) saveStateDebounced(0);
       }, 3500);
 
       document.documentElement.style.setProperty("--hue", hue);
-      if(label) label.textContent = `hsl(${hue})`;
     }
 
     /***********************
@@ -2168,48 +2082,7 @@
     }
 
     /***********************
-     * MODALS + CUSTOM TEXT
-     ***********************/
-    function openModal(id){ $(id).classList.add("open"); }
-    function closeModal(id){ $(id).classList.remove("open"); }
-
-    function makeId(prefix){
-      return prefix + "_" + Math.random().toString(36).slice(2,8) + "_" + Date.now().toString(36);
-    }
-
-    function createCustomText(){
-      const title = $("#newTitle").value.trim();
-      const level = $("#newLevel").value;
-      const desc  = $("#newDesc").value.trim();
-      const raw   = $("#newRaw").value.replace(/\r/g,"").trim();
-
-      if(!title || !raw){ toast("Preencha Título e Texto."); return; }
-
-      const lines = raw.split("\n")
-        .map(s=>s.trim())
-        .filter(Boolean)
-        .map(s=>({
-          jp:s, jpRuby:"", reading:"",
-          pt:"", structure:"", literal:"", points:[], grammar:"",
-          breakdown:[], vocab:[]
-        }));
-
-      const text = { id: makeId("custom"), level, title, desc, tags:["custom"], lines };
-      state.texts.push(text);
-      saveStateNow();
-
-      closeModal("#modalNew");
-      $("#newTitle").value = "";
-      $("#newDesc").value = "";
-      $("#newRaw").value = "";
-
-      setLevelView(level);
-      setActiveText(text.id);
-      toast("Texto criado ✅");
-    }
-
-    /***********************
-     * EXPORT / IMPORT
+     * EXPORT
      ***********************/
     function exportAll(){
       const payload = {
@@ -2234,38 +2107,6 @@
       a.remove();
       URL.revokeObjectURL(url);
       toast("Exportado ✅");
-    }
-
-    function doImport(){
-      const raw = $("#importArea").value.trim();
-      if(!raw){ toast("Cole um JSON válido."); return; }
-      try{
-        const parsed = JSON.parse(raw);
-        const incomingTexts = parsed.texts || [];
-        const existing = new Map((state.texts||[]).map(t=>[t.id,t]));
-        for(const t of incomingTexts){
-          if(!t?.id) continue;
-          if(!existing.has(t.id)) existing.set(t.id, t);
-          else existing.set(t.id, mergeDeep(existing.get(t.id), t));
-        }
-        state.texts = Array.from(existing.values());
-
-        const incState = parsed.state || {};
-        state.ui = mergeDeep(state.ui, incState.ui || {});
-        state.progress = mergeDeep(state.progress, incState.progress || {});
-        state.deck = mergeDeep(state.deck, incState.deck || {});
-        if(incState.activeTextId) state.activeTextId = incState.activeTextId;
-
-        saveStateNow();
-        closeModal("#modalImport");
-        applyAppearance();
-        syncToggleButtons();
-        renderLibrary();
-        renderMain();
-        toast("Importado ✅");
-      }catch(e){
-        toast("JSON inválido.");
-      }
     }
 
     function resetProgress(){
@@ -2396,25 +2237,11 @@
         toast("Notas limpas.");
       });
 
-      $("#btnNewText").addEventListener("click", ()=> openModal("#modalNew"));
-      $("#btnCloseModalNew").addEventListener("click", ()=> closeModal("#modalNew"));
-      $("#btnCreateText").addEventListener("click", createCustomText);
-
       $("#btnExport").addEventListener("click", exportAll);
-      $("#btnImport").addEventListener("click", ()=> openModal("#modalImport"));
-      $("#btnCloseModalImport").addEventListener("click", ()=> closeModal("#modalImport"));
-      $("#btnDoImport").addEventListener("click", doImport);
-
       $("#btnReset").addEventListener("click", resetProgress);
-
-      ["#modalNew", "#modalImport"].forEach(mid=>{
-        $(mid).addEventListener("click", (e)=>{ if(e.target === $(mid)) closeModal(mid); });
-      });
 
       window.addEventListener("keydown", (e)=>{
         if(e.key === "Escape"){
-          $("#modalNew").classList.remove("open");
-          $("#modalImport").classList.remove("open");
           $("#focusOverlay").classList.remove("open");
         }
       });
