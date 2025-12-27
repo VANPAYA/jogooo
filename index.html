@@ -806,9 +806,9 @@
           <div class="box">
             <div class="boxTitle">
               <b>Vocabulário do texto</b>
-              <span class="tag">Verbos: 他/自</span>
+              <span class="tag">Verbos: tipo</span>
             </div>
-            <p>Para verbos, o site mostra se é <b>他動詞</b> (transitivo) ou <b>自動詞</b> (intransitivo).</p>
+            <p>Quando for verbo, o site indica em PT-BR se é <b>verbo transitivo</b> ou <b>verbo intransitivo</b>.</p>
           </div>
           <div class="vocabGrid" id="vocabGrid"></div>
         </div>
@@ -969,13 +969,10 @@
 
   <script>
     /***********************
-     * BUILT-IN TEXTS (mais textos + verbos 他/自)
-     * Convenção:
-     * - breakdown item pode ter vt: "他" ou "自"
-     * - vocab item pode ter vt: "他" ou "自"
+     * TEXTOS (mesma base)
+     * vt: "他" ou "自" fica interno, mas o site exibe em PT-BR.
      ***********************/
     const builtInTexts = [
-      /* ===================== N5 ===================== */
       {
         id: "n5_school_day",
         level: "N5",
@@ -993,7 +990,7 @@
             points: [
               "は marca tópico.",
               "に marca horário específico.",
-              "起きる é tipicamente <b>自動詞</b> (o ato acontece com o sujeito)."
+              "起きる é geralmente verbo intransitivo (a ação acontece com o sujeito)."
             ],
             grammar: "Aは + tempo + horaに + Vます",
             breakdown: [
@@ -1019,8 +1016,8 @@
             literal: "(Café da manhã) eu como e (banho) eu tomo.",
             points: [
               "〜て liga ações em sequência.",
-              "食べる é <b>他動詞</b> (come algo).",
-              "浴びる aqui é geralmente <b>他動詞</b> (浴びる ‘tomar/receber’ algo: シャワーを浴びる)."
+              "食べる é verbo transitivo (come algo).",
+              "浴びる aqui funciona como verbo transitivo (シャワーを浴びる)."
             ],
             grammar: "Vて + Vます (sequência)",
             breakdown: [
@@ -1046,7 +1043,7 @@
             literal: "Às sete e meia, saio de casa.",
             points: [
               "家を出る = sair de casa (を = ponto de saída).",
-              "出る aqui funciona como <b>自動詞</b> (você sai; não ‘faz sair’ algo)."
+              "出る aqui funciona como verbo intransitivo (você sai)."
             ],
             grammar: "lugarを出る",
             breakdown: [
@@ -1071,8 +1068,8 @@
             literal: "Até a estação, indo a pé, vou.",
             points: [
               "まで = até (limite).",
-              "歩く é geralmente <b>自動詞</b> (andar).",
-              "行く é geralmente <b>自動詞</b> (ir)."
+              "歩く é verbo intransitivo (andar).",
+              "行く é verbo intransitivo (ir)."
             ],
             grammar: "Vて + 行く (meio/ação)",
             breakdown: [
@@ -1094,7 +1091,7 @@
             pt: "Eu vou para a escola de trem.",
             structure: "乗り物で + 場所に + 行きます",
             literal: "De trem, para a escola, vou.",
-            points: ["で = meio", "に = destino", "行く = <b>自動詞</b>"],
+            points: ["で = meio", "に = destino", "行く = verbo intransitivo"],
             grammar: "で (meio) + に (destino)",
             breakdown: [
               { jp:"電車", r:"でんしゃ", m:"trem", note:"meio" },
@@ -1112,7 +1109,6 @@
         ]
       },
 
-      /* ✅ N5 EXTRA 1 */
       {
         id: "n5_shopping",
         level: "N5",
@@ -1127,7 +1123,7 @@
             pt: "Hoje eu compro legumes no supermercado.",
             structure: "今日は + 場所で + Nを + 買います",
             literal: "Quanto a hoje, no supermercado, legumes eu compro.",
-            points: ["で = local da ação", "買う = <b>他動詞</b> (compra algo)."],
+            points: ["で = local da ação", "買う = verbo transitivo (compra algo)."],
             grammar: "場所で + Nを + Vます",
             breakdown: [
               { jp:"今日", r:"きょう", m:"hoje", note:"tempo" },
@@ -1179,9 +1175,7 @@
               { jp:"いくら", r:"いくら", m:"quanto (preço)", note:"interrogativo" },
               { jp:"ですか", r:"ですか", m:"é? (pergunta)", note:"cópula+Q" }
             ],
-            vocab: [
-              { w:"いくら", r:"いくら", m:"quanto (preço)" }
-            ]
+            vocab: [{ w:"いくら", r:"いくら", m:"quanto (preço)" }]
           },
           {
             jp: "お金が足りません。",
@@ -1190,7 +1184,7 @@
             pt: "O dinheiro não é suficiente.",
             structure: "Nが + 足りません",
             literal: "Dinheiro (sujeito) não é suficiente.",
-            points: ["足りる = <b>自動詞</b> (ser suficiente)."],
+            points: ["足りる = verbo intransitivo (ser suficiente)."],
             grammar: "Nが足りる/足りない",
             breakdown: [
               { jp:"お金", r:"おかね", m:"dinheiro", note:"substantivo" },
@@ -1205,7 +1199,6 @@
         ]
       },
 
-      /* ✅ N5 EXTRA 2 */
       {
         id: "n5_weekend_plan",
         level: "N5",
@@ -1220,7 +1213,7 @@
             pt: "No fim de semana, quero ver um filme com um amigo.",
             structure: "週末に + 友だちと + 映画を + 見たいです",
             literal: "No fim de semana, com amigo, filme quero ver.",
-            points: ["〜たい = desejo do falante", "見る = <b>他動詞</b> (ver algo)."],
+            points: ["〜たい = desejo do falante", "見る = verbo transitivo (ver algo)."],
             grammar: "Vます + たいです",
             breakdown: [
               { jp:"週末", r:"しゅうまつ", m:"fim de semana", note:"tempo" },
@@ -1253,9 +1246,7 @@
               { jp:"多い", r:"おおい", m:"muito", note:"adj-i" },
               { jp:"です", r:"です", m:"(forma educada)", note:"cópula" }
             ],
-            vocab: [
-              { w:"宿題", r:"しゅくだい", m:"lição de casa" }
-            ]
+            vocab: [{ w:"宿題", r:"しゅくだい", m:"lição de casa" }]
           },
           {
             jp: "だから、土曜日の朝に勉強します。",
@@ -1264,7 +1255,7 @@
             pt: "Então, eu estudo na manhã de sábado.",
             structure: "だから + (tempo)に + 勉強します",
             literal: "Por isso, na manhã de sábado, estudo.",
-            points: ["だから = por isso", "勉強する = <b>他動詞/ação</b> (marcar como 他)."],
+            points: ["だから = por isso", "勉強する = ação (marcado aqui como verbo transitivo)."],
             grammar: "だから + Vます",
             breakdown: [
               { jp:"だから", r:"だから", m:"por isso", note:"conector" },
@@ -1282,7 +1273,6 @@
         ]
       },
 
-      /* ===================== N4 ===================== */
       {
         id: "n4_moving_prep",
         level: "N4",
@@ -1299,7 +1289,7 @@
             literal: "No mês que vem, por circunstâncias do trabalho, tornou-se decidido que vou me mudar.",
             points: [
               "〜ことになった = decisão definida por circunstância.",
-              "引っ越す = <b>自動詞</b> (mudar-se)."
+              "引っ越す = verbo intransitivo (mudar-se)."
             ],
             grammar: "N4: ことになった",
             breakdown: [
@@ -1323,13 +1313,13 @@
             structure: "Nは Vなくなりそうなので、(quantidade)に Vておきました",
             literal: "Quanto às caixas, como parece que vão ficar insuficientes, comprei um pouco a mais e deixei preparado.",
             points: [
-              "足りる = <b>自動詞</b> (ser suficiente).",
-              "買う = <b>他動詞</b> (comprar algo).",
+              "足りる = verbo intransitivo (ser suficiente).",
+              "買う = verbo transitivo (comprar algo).",
               "〜ておく = preparar/adiantar."
             ],
             grammar: "N4: そう + ので + ておく",
             breakdown: [
-              { jp:"足りなくなりそう", r:"たりなくなりそう", m:"parece que vai faltar", note:"変化 + そう", vt:"自" },
+              { jp:"足りなくなりそう", r:"たりなくなりそう", m:"parece que vai faltar", note:"mudança + そう", vt:"自" },
               { jp:"多めに", r:"おおめに", m:"um pouco a mais", note:"quantidade" },
               { jp:"買っておきました", r:"かっておきました", m:"comprei antecipadamente", note:"Vておく", vt:"他" }
             ],
@@ -1342,7 +1332,6 @@
         ]
       },
 
-      /* ✅ N4 EXTRA 1 */
       {
         id: "n4_parttime_study",
         level: "N4",
@@ -1359,8 +1348,8 @@
             literal: "Para se tornar bom, todos os dias aos poucos estou praticando.",
             points: [
               "〜ために = para (objetivo).",
-              "なる = <b>自動詞</b> (tornar-se).",
-              "練習する = <b>他動詞/ação</b> (marcar como 他)."
+              "なる = verbo intransitivo (tornar-se).",
+              "練習する = ação (marcado aqui como verbo transitivo)."
             ],
             grammar: "N4: ために (objetivo)",
             breakdown: [
@@ -1381,16 +1370,13 @@
             pt: "Para não esquecer, eu escrevo as palavras novas no caderno.",
             structure: "忘れないように、NをNに書いています",
             literal: "Para não esquecer, palavras novas no caderno estou escrevendo.",
-            points: [
-              "〜ように = para (prevenção/objetivo ‘evitar’).",
-              "書く = <b>他動詞</b> (escrever algo)."
-            ],
+            points: ["〜ように = para (evitar/objetivo)", "書く = verbo transitivo (escrever algo)."],
             grammar: "N4: ように (evitar/objetivo)",
             breakdown: [
               { jp:"忘れない", r:"わすれない", m:"não esquecer", note:"negação", vt:"他" },
               { jp:"ように", r:"ように", m:"para (evitar)", note:"padrão" },
               { jp:"単語を", r:"たんごを", m:"palavras (objeto)", note:"を" },
-              { jp:"ノートに", r:"のーとに", m:"no caderno", note:"に (local destino)" },
+              { jp:"ノートに", r:"のーとに", m:"no caderno", note:"に" },
               { jp:"書いています", r:"かいています", m:"estou escrevendo", note:"Vている", vt:"他" }
             ],
             vocab: [
@@ -1402,7 +1388,6 @@
         ]
       },
 
-      /* ✅ N4 EXTRA 2 */
       {
         id: "n4_health_habit",
         level: "N4",
@@ -1417,10 +1402,7 @@
             pt: "Pela saúde, à noite eu tento não comer muitas coisas doces.",
             structure: "健康のために、夜は Nを Vないようにしています",
             literal: "Para a saúde, à noite, coisas doces eu tento não comer.",
-            points: [
-              "〜ようにしている = ‘tento fazer/tenho o hábito de’.",
-              "食べる = <b>他動詞</b>."
-            ],
+            points: ["〜ようにしている = hábito/tentativa", "食べる = verbo transitivo (comer algo)."],
             grammar: "N4: Vないようにしている",
             breakdown: [
               { jp:"健康のために", r:"けんこうのために", m:"pela saúde / para a saúde", note:"objetivo" },
@@ -1440,11 +1422,8 @@
             reading: "うんどうは まいにち したほうがいいと おもいます。",
             pt: "Eu acho que é melhor fazer exercício todos os dias.",
             structure: "Nは Vたほうがいいと思います",
-            literal: "Quanto a exercício, acho que é melhor ter feito (fazer).",
-            points: [
-              "〜たほうがいい = ‘é melhor fazer’.",
-              "思う = <b>他動詞</b> (pensar algo)."
-            ],
+            literal: "Quanto a exercício, acho que é melhor fazer.",
+            points: ["〜たほうがいい = recomendação", "思う = verbo transitivo (achar algo)."],
             grammar: "N4: Vたほうがいい",
             breakdown: [
               { jp:"運動", r:"うんどう", m:"exercício", note:"tópico" },
@@ -1508,7 +1487,6 @@
 
     let state = loadState();
 
-    // ✅ Otimização: debounce no save (evita gravar LocalStorage a cada ação)
     let saveTimer = null;
     function saveStateDebounced(ms=350){
       clearTimeout(saveTimer);
@@ -1562,9 +1540,10 @@
       return arr;
     }
 
+    // ✅ EXIBIÇÃO EM PT-BR (sem japones, sem (他)/(自))
     function vtLabel(vt){
-      if(vt === "他") return "他動詞";
-      if(vt === "自") return "自動詞";
+      if(vt === "他") return "Verbo transitivo";
+      if(vt === "自") return "Verbo intransitivo";
       return "";
     }
 
@@ -1584,7 +1563,6 @@
       toast(state.ui.appearance === "dark" ? "Escuro" : "Claro");
     }
 
-    // ✅ Otimização: não salva no LocalStorage a cada tick
     function startTheme(){
       const label = $("#themeLabel");
       let hue = state.ui?.hue ?? 210;
@@ -1597,7 +1575,7 @@
         if(label) label.textContent = `hsl(${hue})`;
 
         tick++;
-        if(tick % 10 === 0) saveStateDebounced(0); // salva mais raro
+        if(tick % 10 === 0) saveStateDebounced(0);
       }, 3500);
 
       document.documentElement.style.setProperty("--hue", hue);
@@ -1790,7 +1768,7 @@
 
         const breakdown = (ln.breakdown||[]).length
           ? (ln.breakdown||[]).map(b=>{
-              const vt = b.vt ? ` <span class="tag" style="margin-left:6px">(${b.vt}) ${vtLabel(b.vt)}</span>` : "";
+              const vt = b.vt ? ` <span class="tag" style="margin-left:6px">${escapeHTML(vtLabel(b.vt))}</span>` : "";
               return `
                 <div class="tag" style="margin:4px 6px 0 0">
                   <b>${escapeHTML(b.jp)}</b> ${escapeHTML(b.r||"")} • ${escapeHTML(b.m||"")}
@@ -1860,7 +1838,7 @@
                   <div class="boxTitle"><b>Vocabulário (linha)</b></div>
                   <p>
                     ${(ln.vocab||[]).map(v=>{
-                      const vt = v.vt ? ` <span class="tag" style="margin-left:6px">(${escapeHTML(v.vt)}) ${escapeHTML(vtLabel(v.vt))}</span>` : "";
+                      const vt = v.vt ? ` <span class="tag" style="margin-left:6px">${escapeHTML(vtLabel(v.vt))}</span>` : "";
                       return `<span class="tag" style="margin:4px 6px 0 0">🧩 <b>${escapeHTML(v.w)}</b> ${escapeHTML(v.r)} • ${escapeHTML(v.m)}${vt}</span>`;
                     }).join("") || "—"}
                   </p>
@@ -1946,7 +1924,7 @@
       grid.innerHTML = vocab.map(v=>{
         const k = wordKey(v);
         const inDeck = !!state.deck[k];
-        const vt = v.vt ? `<span class="tag">(${escapeHTML(v.vt)}) ${escapeHTML(vtLabel(v.vt))}</span>` : "";
+        const vt = v.vt ? `<span class="tag">${escapeHTML(vtLabel(v.vt))}</span>` : "";
         return `
           <div class="vocabCard">
             <div>
@@ -2058,8 +2036,10 @@
       }
 
       $("#flashFront").textContent = card.w;
-      const vt = card.vt ? ` • (${card.vt}) ${vtLabel(card.vt)}` : "";
+
+      const vt = card.vt ? ` • ${vtLabel(card.vt)}` : "";
       $("#flashReading").textContent = (card.r || "") + vt;
+
       $("#flashMeaning").textContent = card.m || "";
       $("#deckStatus").textContent = `Cards: ${total} • Devidos agora: ${dueCount}`;
     }
@@ -2132,7 +2112,7 @@
         const wrong = shuffle(allMeanings.filter(m=>m!==correct)).slice(0,3);
         const choices = shuffle([correct, ...wrong]);
 
-        const vt = it.vt ? ` <span class="tag">(${escapeHTML(it.vt)}) ${escapeHTML(vtLabel(it.vt))}</span>` : "";
+        const vt = it.vt ? ` <span class="tag">${escapeHTML(vtLabel(it.vt))}</span>` : "";
         const el = document.createElement("div");
         el.className = "quizQ";
         el.innerHTML = `
@@ -2438,7 +2418,6 @@
         }
       });
 
-      // salva ao sair (garante)
       window.addEventListener("beforeunload", ()=> saveStateNow());
     }
 
