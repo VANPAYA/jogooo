@@ -2,1042 +2,2148 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>日本語ワードサーチ — Caça-Palavras Japonês (Atualiza a cada partida)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>日本語テキストラボ — N5/N4 (Análise linha a linha)</title>
+
   <style>
     :root{
-      --bg:#070a10;
-      --panel:rgba(255,255,255,.08);
-      --panel2:rgba(255,255,255,.12);
-      --border:rgba(255,255,255,.14);
-      --txt:#eef2ff;
-      --muted:rgba(238,242,255,.70);
-      --muted2:rgba(238,242,255,.55);
-      --good:#34d399;
-      --bad:#fb7185;
-      --warn:#fbbf24;
+      --bg0:#070A10;
+      --bg1:#0B1220;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.085);
+      --stroke: rgba(255,255,255,.14);
+      --text:#EAF0FF;
+      --muted: rgba(234,240,255,.70);
+      --muted2: rgba(234,240,255,.55);
 
-      --hue: 200;
-      --a1:hsl(calc(var(--hue) - 20) 92% 60%);
-      --a2:hsl(var(--hue) 92% 58%);
-      --a3:hsl(calc(var(--hue) + 60) 92% 62%);
-      --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --r: 18px;
+      --hue: 200; /* muda com JS */
+      --a1: hsl(calc(var(--hue) + 10) 90% 62%);
+      --a2: hsl(calc(var(--hue) - 20) 90% 58%);
+      --a3: hsl(calc(var(--hue) + 55) 90% 60%);
 
-      --cell: 42px;
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+      --radius: 18px;
+      --radius2: 26px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      --jp: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", var(--sans);
+
+      --fontScale: 1; /* controlado via JS */
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 15% 10%, rgba(0,180,255,.18), transparent 55%),
+                  radial-gradient(900px 600px at 90% 25%, rgba(255,80,220,.14), transparent 58%),
+                  radial-gradient(900px 600px at 50% 92%, rgba(0,255,170,.10), transparent 60%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
       overflow:hidden;
+    }
+
+    /* Animated glow "aurora" */
+    .aurora{
+      position:fixed; inset:-20%;
       background:
-        radial-gradient(1100px 650px at 70% 10%, rgba(80,180,255,.14), transparent 55%),
-        radial-gradient(900px 600px at 15% 30%, rgba(255,80,210,.12), transparent 55%),
-        radial-gradient(900px 600px at 60% 90%, rgba(60,255,170,.10), transparent 55%),
-        var(--bg);
-      color:var(--txt);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
+        radial-gradient(closest-side at 20% 20%, rgba(255,255,255,.10), transparent 60%),
+        radial-gradient(closest-side at 80% 30%, rgba(255,255,255,.07), transparent 60%),
+        radial-gradient(closest-side at 50% 80%, rgba(255,255,255,.06), transparent 60%),
+        conic-gradient(from 230deg at 50% 50%,
+          rgba(0,0,0,0),
+          rgba(0,0,0,0),
+          rgba(255,255,255,.10),
+          rgba(0,0,0,0),
+          rgba(255,255,255,.08),
+          rgba(0,0,0,0)
+        );
+      filter: blur(34px) saturate(120%);
+      opacity:.55;
+      animation: drift 16s ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes drift{
+      0%   { transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
+      50%  { transform: translate3d(2%,  2%, 0) scale(1.06) rotate(8deg); }
+      100% { transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(0deg); }
     }
 
-    .wrap{
-      position:fixed; inset:0;
+    /* Layout */
+    .app{
+      position:relative;
+      height:100%;
       display:grid;
-      grid-template-rows: auto 1fr auto;
-      gap:12px;
-      padding:14px;
-    }
-
-    .hud{
-      display:flex; gap:10px; align-items:stretch; flex-wrap:wrap;
-    }
-
-    .chip{
-      display:flex; gap:12px; align-items:center;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid var(--border);
-      border-radius:999px;
-      padding:10px 12px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-    .chip .label{color:var(--muted2); font-size:12px; letter-spacing:.08em; text-transform:uppercase}
-    .chip .value{font-weight:900}
-    .chip .col{display:flex; flex-direction:column; gap:2px; min-width:90px}
-
-    .btn{
-      display:inline-flex; align-items:center; justify-content:center; gap:8px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      padding:10px 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      color:var(--txt);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      cursor:pointer;
-      font-weight:900; font-size:13px;
-      transition: transform .08s ease, border-color .2s ease;
-      white-space:nowrap;
-    }
-    .btn:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22)}
-    .btn:active{transform: translateY(0) scale(.99)}
-    .btn[aria-pressed="true"]{outline:2px solid rgba(80,200,255,.25)}
-
-    .select{
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.25);
-      color: var(--txt);
-      padding:9px 10px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    .main{
-      display:grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap:12px;
-      min-height:0;
-    }
-    @media (max-width: 980px){
-      .main{grid-template-columns: 1fr; overflow:auto}
+      grid-template-columns: 360px 1fr;
+      gap: 14px;
+      padding: 14px;
     }
 
     .panel{
-      border-radius: var(--r);
-      border:1px solid var(--border);
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.035));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius2);
       box-shadow: var(--shadow);
       overflow:hidden;
-      min-height:0;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display:flex;
+      flex-direction:column;
+      min-height: 0;
     }
-    .panel header{
-      padding:14px 14px 12px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(90deg, rgba(80,200,255,.12), rgba(255,80,210,.08), rgba(60,255,170,.08));
-      display:flex; align-items:flex-end; justify-content:space-between; gap:10px; flex-wrap:wrap;
-    }
-    .panel header h1{margin:0; font-size:16px; letter-spacing:.02em}
-    .sub{color:var(--muted); font-size:12.5px; line-height:1.4}
 
-    .boardWrap{
-      padding:14px;
+    .panelHeader{
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
       display:flex;
       align-items:center;
-      justify-content:center;
-      min-height:0;
+      justify-content:space-between;
+      gap: 12px;
     }
 
-    .board{
-      display:grid;
-      gap:6px;
-      padding:10px;
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.25);
-      touch-action:none; /* crucial */
+    .brand{
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      min-width: 0;
+    }
+    .logo{
+      width: 44px; height: 44px;
+      border-radius: 14px;
+      background:
+        radial-gradient(80% 80% at 20% 20%, rgba(255,255,255,.22), transparent 60%),
+        linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.14);
+      position:relative;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: conic-gradient(from 180deg,
+        rgba(255,255,255,0),
+        rgba(255,255,255,.18),
+        rgba(255,255,255,0));
+      transform: rotate(12deg);
+      animation: sheen 3.8s ease-in-out infinite;
+      opacity:.9;
+    }
+    @keyframes sheen{
+      0%{ transform: translateX(-18%) rotate(12deg); }
+      55%{ transform: translateX(18%) rotate(12deg); }
+      100%{ transform: translateX(-18%) rotate(12deg); }
     }
 
-    .cell{
-      width: var(--cell);
-      height: var(--cell);
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      display:grid;
-      place-items:center;
-      font-weight:900;
-      font-size:18px;
+    .brandTitle{
+      display:flex;
+      flex-direction:column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .brandTitle .name{
+      font-weight: 800;
+      letter-spacing: .3px;
+      font-size: 14px;
+      line-height: 1.1;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .brandTitle .sub{
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--muted);
+      font-size: 12px;
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .btn{
       cursor:pointer;
-      transition: transform .08s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 12px;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.085); border-color: rgba(255,255,255,.20); }
+    .btn:active{ transform: translateY(0px); }
+
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border-color: rgba(255,255,255,.20);
       position:relative;
       overflow:hidden;
     }
-    .cell:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22)}
-    .cell:active{transform: translateY(0) scale(.99)}
-    .cell.sel{
-      border-color: rgba(251,191,36,.55);
-      box-shadow: 0 0 0 2px rgba(251,191,36,.12), 0 0 18px rgba(251,191,36,.18);
-      background: rgba(251,191,36,.10);
-    }
-    .cell.found{
-      border-color: rgba(52,211,153,.55);
-      box-shadow: 0 0 0 2px rgba(52,211,153,.12), 0 0 18px rgba(52,211,153,.18);
-      background: rgba(52,211,153,.10);
-    }
-    .cell.badflash{
-      border-color: rgba(251,113,133,.60);
-      background: rgba(251,113,133,.12);
-      box-shadow: 0 0 0 2px rgba(251,113,133,.10), 0 0 18px rgba(251,113,133,.18);
+    .btnPrimary::after{
+      content:"";
+      position:absolute; inset:0;
+      background: radial-gradient(80% 80% at 20% 10%, rgba(255,255,255,.18), transparent 60%),
+                  linear-gradient(135deg, rgba(0,0,0,0), rgba(255,255,255,.06));
+      opacity:.75;
+      pointer-events:none;
     }
 
-    .side{
-      padding:14px;
-      display:grid;
-      gap:12px;
-      min-height:0;
+    .btnAccent{
+      border-color: rgba(255,255,255,.20);
+      background: linear-gradient(135deg, rgba(0,0,0,.22), rgba(0,0,0,.10));
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .btnAccent::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: linear-gradient(135deg, rgba(0,0,0,0), rgba(255,255,255,.12), rgba(0,0,0,0));
+      opacity:.35;
+      filter: blur(6px);
+      pointer-events:none;
+    }
+    .btnAccent strong{
+      background: linear-gradient(90deg, var(--a1), var(--a3));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color: transparent;
     }
 
-    .card{
-      border-radius: 16px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.20);
-      padding:14px;
-    }
-    .card h2{margin:0 0 8px; font-size:13px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase}
-    .card p{margin:0; color:var(--muted); line-height:1.55; font-size:14px}
-
-    .words{
-      display:grid;
-      gap:8px;
-      max-height: 46vh;
+    .content{
+      padding: 14px 14px 16px;
       overflow:auto;
-      padding-right: 6px;
+      min-height: 0;
     }
-    .w{
+
+    .row{ display:flex; gap: 10px; align-items:center; flex-wrap:wrap; }
+    .col{ display:flex; flex-direction:column; gap: 10px; }
+    .split{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .app{ grid-template-columns: 1fr; height:auto; overflow:visible; }
+    }
+
+    /* Inputs */
+    .input, .select, .textarea{
+      width: 100%;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 13px;
+    }
+    .textarea{ min-height: 110px; resize: vertical; font-family: var(--mono); }
+    .input::placeholder,.textarea::placeholder{ color: rgba(234,240,255,.40); }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 9px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      font-size: 12px;
+      gap: 6px;
+      white-space:nowrap;
+    }
+    .tag b{ color: var(--text); }
+
+    .kpi{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .kpiCard{
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+    }
+    .kpiCard .v{
+      font-weight: 900;
+      font-size: 16px;
+      letter-spacing: .2px;
+    }
+    .kpiCard .l{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Library list */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .item{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius: 16px;
+      padding: 12px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .item:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18); }
+    .item.active{
+      border-color: rgba(255,255,255,.22);
+      background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.04));
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+    .itemTop{ display:flex; justify-content:space-between; align-items:flex-start; gap: 10px; }
+    .itemTitle{
+      font-weight: 900;
+      font-size: 13px;
+      line-height: 1.25;
+      margin:0;
+    }
+    .itemDesc{
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    /* Main header */
+    .mainHeader{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:10px;
-      padding:10px 10px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
+      gap: 12px;
+      flex-wrap:wrap;
     }
-    .w .jp{font-weight:900}
-    .w .pt{color:var(--muted); font-size:12.5px}
-    .w .tag{
-      color: var(--muted2);
-      font-size: 12px;
-      border:1px solid rgba(255,255,255,.14);
+    .hTitle{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      min-width: 260px;
+    }
+    .hTitle h1{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .hTitle .meta{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .tabs{
+      display:flex;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
       border-radius: 999px;
-      padding: 6px 8px;
-      background: rgba(0,0,0,.15);
-      white-space:nowrap;
-      font-weight:900;
+      flex-wrap:wrap;
     }
-    .w.done{
-      border-color: rgba(52,211,153,.40);
-      background: rgba(52,211,153,.08);
-      opacity: .92;
+    .tab{
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      border: 1px solid transparent;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 12px;
+      user-select:none;
     }
-    .w.done .tag{color: rgba(52,211,153,.95); border-color: rgba(52,211,153,.30)}
-
-    .kbd{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:8px;
-      border:1px solid rgba(255,255,255,.18);
+    .tab.active{
+      color: var(--text);
+      border-color: rgba(255,255,255,.18);
       background: rgba(255,255,255,.06);
-      font-weight:900;
-      font-size:12px;
-      color:var(--txt);
-      margin: 0 3px;
     }
 
-    .toast{
-      position:fixed;
-      left:50%;
-      transform: translateX(-50%);
-      top:84px;
-      z-index:50;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.42);
+    /* Lines */
+    .lineList{ display:flex; flex-direction:column; gap: 10px; margin-top: 12px; }
+    .lineCard{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 12px;
+      overflow:hidden;
+    }
+    .lineTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap: 10px;
+    }
+    .lineLeft{ min-width: 0; }
+    .jp{
+      font-family: var(--jp);
+      font-size: calc(16px * var(--fontScale));
+      font-weight: 800;
+      line-height: 1.45;
+      margin:0;
+      word-break: break-word;
+    }
+    .reading{
+      margin-top: 6px;
+      font-size: calc(12px * var(--fontScale));
+      color: var(--muted);
+      font-family: var(--jp);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .lineBadges{ display:flex; flex-direction:column; gap: 8px; align-items:flex-end; }
+    .chk{
+      display:flex; align-items:center; gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      font-size: 12px;
+      color: var(--muted);
+      user-select:none;
+    }
+    .chk input{ accent-color: var(--a1); }
+    .lineActions{
+      display:flex; gap: 8px; flex-wrap:wrap; margin-top: 10px;
+    }
+
+    .details{
+      margin-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,.14);
+      padding-top: 10px;
+      display:none;
+    }
+    .lineCard.open .details{ display:block; }
+
+    .pt{
+      margin:0;
+      color: var(--text);
+      font-size: calc(13px * var(--fontScale));
+      line-height: 1.55;
+    }
+    .notes{
+      margin-top: 10px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .box{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .boxTitle{
+      display:flex; justify-content:space-between; align-items:center; gap: 10px;
+      margin-bottom: 6px;
+    }
+    .boxTitle b{
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing:.2px;
+      text-transform: uppercase;
+    }
+    .box p{
+      margin: 0;
+      font-size: calc(13px * var(--fontScale));
+      color: var(--text);
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    /* Vocab */
+    .vocabGrid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){
+      .vocabGrid{ grid-template-columns: 1fr; }
+    }
+    .vocabCard{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 12px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .vocabCard .w{
+      font-family: var(--jp);
+      font-size: calc(16px * var(--fontScale));
+      font-weight: 900;
+      margin:0;
+    }
+    .vocabCard .r{
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--jp);
+    }
+    .vocabCard .m{
+      margin-top: 6px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .vocabRight{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      align-items:flex-end;
+      justify-content:space-between;
+      min-width: 120px;
+    }
+
+    /* Flashcards */
+    .cardWrap{
+      margin-top: 12px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 10px;
+    }
+    @media (max-width: 980px){
+      .cardWrap{ grid-template-columns: 1fr; }
+    }
+    .flash{
+      border: 1px solid rgba(255,255,255,.14);
+      background: radial-gradient(120% 120% at 20% 10%, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border-radius: 22px;
+      padding: 16px;
+      min-height: 220px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap: 10px;
+      text-align:center;
+      box-shadow: 0 18px 55px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .flash .front{
+      font-family: var(--jp);
+      font-size: calc(30px * var(--fontScale));
+      font-weight: 1000;
+      letter-spacing:.3px;
+    }
+    .flash .back{
+      display:none;
+      width: 100%;
+      max-width: 520px;
+    }
+    .flash.revealed .back{ display:block; }
+    .flash.revealed .hint{ display:none; }
+
+    .flash .hint{
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    .flash .subline{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: var(--jp);
+    }
+    .flash .meaning{
+      margin-top: 8px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    /* Quiz */
+    .quizQ{
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 12px;
+    }
+    .quizQ h3{ margin:0 0 10px; font-size: 14px; }
+    .choices{ display:flex; flex-direction:column; gap: 8px; }
+    .choice{
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+      display:flex; justify-content:space-between; gap: 10px;
+    }
+    .choice:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.20); }
+    .choice.good{ border-color: rgba(0,255,170,.35); background: rgba(0,255,170,.10); }
+    .choice.bad{ border-color: rgba(255,80,120,.35); background: rgba(255,80,120,.10); }
+    .choice small{ color: var(--muted); }
+
+    /* Modal */
+    .modal{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 14px;
+      z-index: 50;
+    }
+    .modal.open{ display:flex; }
+    .modalCard{
+      width: min(980px, 100%);
+      max-height: 88vh;
+      overflow:auto;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      font-weight:900;
-      font-size:13px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .22s ease, transform .22s ease;
-      display:flex; gap:10px; align-items:center;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 14px;
     }
-    .toast.show{opacity:1; transform: translateX(-50%) translateY(0)}
-    .dot{width:10px;height:10px;border-radius:99px;background:var(--a2); box-shadow:0 0 14px rgba(80,200,255,.35)}
-    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    .modalCard h2{ margin: 0 0 10px; font-size: 16px; }
+    .modalCard .help{ color: var(--muted); font-size: 12px; margin: 0 0 12px; line-height: 1.45; }
 
-    .footer{
-      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+    /* Focus mode */
+    .focusMode body{ overflow:hidden; }
+    .focus{
+      position:fixed; inset:0;
+      background: radial-gradient(1200px 700px at 20% 20%, rgba(0,180,255,.16), transparent 58%),
+                  radial-gradient(900px 600px at 85% 30%, rgba(255,80,220,.12), transparent 60%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      z-index: 60;
+      display:none;
+      padding: 14px;
     }
-    .hintLine{
-      color:var(--muted2);
-      font-size:12px;
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    .focus.open{ display:block; }
+    .focus .panel{ height: 100%; }
+
+    /* tiny icons */
+    .ic{ width: 14px; height: 14px; display:inline-block; }
+    .ic svg{ width:100%; height:100%; fill: currentColor; opacity:.9; }
+    .muted{ color: var(--muted); }
+    .spacer{ height: 10px; }
+    .hr{
+      border:0;
+      border-top: 1px solid rgba(255,255,255,.10);
+      margin: 12px 0;
     }
 
-    @media (max-width: 520px){
-      :root{ --cell: 38px; }
-      .words{max-height: 40vh;}
-    }
+    /* Ruby */
+    ruby{ ruby-position: over; }
+    rt{ font-size: 0.58em; color: rgba(234,240,255,.75); font-weight: 700; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hud">
-      <div class="chip">
-        <div class="col">
-          <div class="label">Score</div>
-          <div class="value" id="score">0</div>
-        </div>
-        <div class="col">
-          <div class="label">Tempo</div>
-          <div class="value mono" id="time">0.0s</div>
-        </div>
-        <div class="col">
-          <div class="label">Best</div>
-          <div class="value" id="best">0</div>
-        </div>
-      </div>
+  <div class="aurora"></div>
 
-      <div class="chip">
-        <div class="col">
-          <div class="label">Partida</div>
-          <div class="value" id="runId">#000</div>
-        </div>
-        <div class="col">
-          <div class="label">Restantes</div>
-          <div class="value" id="left">0</div>
-        </div>
-      </div>
-
-      <div class="chip">
-        <div class="col">
-          <div class="label">Dificuldade</div>
-          <div class="value" id="diffTxt">Normal</div>
-        </div>
-        <select class="select" id="diffSel">
-          <option value="easy">Easy (10x10)</option>
-          <option value="normal" selected>Normal (12x12)</option>
-          <option value="hard">Hard (15x15)</option>
-        </select>
-      </div>
-
-      <div class="chip" style="margin-left:auto;">
-        <button class="btn" id="btnNew">🧩 Nova partida</button>
-        <button class="btn" id="btnHint" aria-pressed="false">👁️ Dica</button>
-        <button class="btn" id="btnAudio" aria-pressed="false">🔇 Som</button>
-      </div>
-    </div>
-
-    <div class="main">
-      <div class="panel">
-        <header>
-          <div>
-            <h1>日本語ワードサーチ — Caça-Palavras</h1>
-            <div class="sub">Selecione em linha reta (horizontal/vertical/diagonal). Atualiza automaticamente ao completar.</div>
+  <div class="app" id="app">
+    <!-- LEFT / LIBRARY -->
+    <section class="panel" id="leftPanel" aria-label="Biblioteca">
+      <div class="panelHeader">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brandTitle">
+            <div class="name">日本語テキストラボ</div>
+            <div class="sub">N5 / N4 • análise linha a linha • progresso local</div>
           </div>
-          <div class="sub">
-            Teclas: <span class="kbd">N</span> nova • <span class="kbd">H</span> dica • <span class="kbd">M</span> som • Toque 2x: início/fim
-          </div>
-        </header>
+        </div>
+        <div class="pill" title="Tema muda com o tempo">⚡ <span id="themeLabel">hue</span></div>
+      </div>
 
-        <div class="boardWrap">
-          <div class="board" id="board" aria-label="Tabuleiro"></div>
+      <div class="content">
+        <div class="col">
+          <div class="row">
+            <select class="select" id="levelFilter" title="Filtrar por nível">
+              <option value="ALL">Nível: Todos</option>
+              <option value="N5">N5</option>
+              <option value="N4">N4</option>
+            </select>
+            <button class="btn btnPrimary" id="btnNewText">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
+              </span>
+              Criar texto
+            </button>
+          </div>
+
+          <input class="input" id="searchInput" placeholder="Buscar título, JP ou palavra-chave..." />
+
+          <div class="kpi" aria-label="Resumo">
+            <div class="kpiCard">
+              <div class="v" id="kpiTexts">0</div>
+              <div class="l">Textos</div>
+            </div>
+            <div class="kpiCard">
+              <div class="v" id="kpiLinesDone">0</div>
+              <div class="l">Linhas revisadas</div>
+            </div>
+            <div class="kpiCard">
+              <div class="v" id="kpiDeck">0</div>
+              <div class="l">Deck (cards)</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <button class="btn" id="btnExport">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18-5 5h3v6h4V7h3l-5-5z"/></svg>
+              </span>
+              Exportar
+            </button>
+            <button class="btn" id="btnImport">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M19 15v4H5v-4H3v6h18v-6h-2zM11 3v6H8l4 4 4-4h-3V3h-2z"/></svg>
+              </span>
+              Importar
+            </button>
+            <button class="btn" id="btnReset">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 6V3L8 7l4 4V8c2.76 0 5 2.24 5 5a5 5 0 1 1-9.9-1h-2.02A7 7 0 1 0 12 6z"/></svg>
+              </span>
+              Reset parcial
+            </button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="list" id="libraryList"></div>
+          <div class="spacer"></div>
+          <div class="muted" style="font-size:12px;line-height:1.45">
+            Dica: clique em uma linha para abrir tradução, gramática e vocabulário. Marque como “revisada” e o progresso fica salvo no seu navegador.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT / READER -->
+    <section class="panel" aria-label="Leitor">
+      <div class="panelHeader">
+        <div class="mainHeader" style="width:100%">
+          <div class="hTitle">
+            <h1 id="textTitle">Selecione um texto</h1>
+            <div class="meta" id="textMeta"></div>
+          </div>
+
+          <div class="row">
+            <div class="tabs" role="tablist" aria-label="Abas">
+              <div class="tab active" data-tab="TAB_TEXT" role="tab">Texto</div>
+              <div class="tab" data-tab="TAB_VOCAB" role="tab">Vocabulário</div>
+              <div class="tab" data-tab="TAB_FLASH" role="tab">Deck</div>
+              <div class="tab" data-tab="TAB_QUIZ" role="tab">Quiz</div>
+              <div class="tab" data-tab="TAB_NOTES" role="tab">Notas</div>
+            </div>
+
+            <button class="btn btnAccent" id="btnFocus">
+              <span class="ic" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H5v5zm10 9h-3v2h5v-5h-2v3zm0-14V5h-5v2h3v3h2z"/></svg>
+              </span>
+              <strong>Modo foco</strong>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="panel">
-        <header>
-          <div>
-            <h1>Lista de palavras</h1>
-            <div class="sub">Cada partida puxa palavras aleatórias (mix hiragana/katakana/kanji) e reposiciona tudo.</div>
-          </div>
-          <div class="sub" id="category">—</div>
-        </header>
-
-        <div class="side">
-          <div class="card">
-            <h2>Gestão de risco (setup)</h2>
+      <div class="content" id="mainContent">
+        <div id="emptyState" style="opacity:.95">
+          <div class="box">
+            <div class="boxTitle">
+              <b>Comece por aqui</b>
+              <span class="tag">📌 <b>N5</b> e <b>N4</b></span>
+            </div>
             <p>
-              Edge é consistência: primeiro diagonais longas (melhor payoff de tempo). Use <b>Dica</b> como hedge quando faltar 2 palavras.
+              À esquerda você tem a biblioteca de textos. Cada texto vem com análise linha a linha (JP, leitura, tradução, gramática e vocabulário).
+              Você também pode criar seus próprios textos e montar seu deck de flashcards.
             </p>
           </div>
 
-          <div class="card">
-            <h2>Palavras</h2>
-            <div class="words" id="words"></div>
+          <div class="split" style="margin-top:10px">
+            <div class="box">
+              <div class="boxTitle"><b>Essenciais (já prontos)</b></div>
+              <p>✅ Filtro N5/N4 • 🔎 Busca • 📚 Análise linha a linha • ⭐ Favoritos • 🧠 Deck • 🎯 Quiz • 📝 Notas • 💾 Tudo salvo no navegador</p>
+            </div>
+            <div class="box">
+              <div class="boxTitle"><b>Controles rápidos</b></div>
+              <div class="row">
+                <button class="btn" id="btnToggleFuri">Furigana: ON</button>
+                <button class="btn" id="btnFontMinus">A-</button>
+                <button class="btn" id="btnFontPlus">A+</button>
+                <button class="btn" id="btnToggleReading">Leitura: ON</button>
+              </div>
+              <div class="muted" style="font-size:12px;margin-top:8px;line-height:1.4">
+                Ajuste para leitura longa e revisão rápida.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- tabs content -->
+        <div id="tab_TEXT" style="display:none">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <div class="row">
+              <button class="btn" id="btnToggleFuri2">Furigana: ON</button>
+              <button class="btn" id="btnToggleReading2">Leitura: ON</button>
+              <button class="btn" id="btnExpandAll">Abrir tudo</button>
+              <button class="btn" id="btnCollapseAll">Fechar tudo</button>
+            </div>
+            <div class="row">
+              <button class="btn" id="btnFontMinus2">A-</button>
+              <button class="btn" id="btnFontPlus2">A+</button>
+              <button class="btn" id="btnBookmark">☆ Favoritar</button>
+            </div>
           </div>
 
-          <div class="footer">
-            <div class="hintLine" id="status">
-              <span>Arraste no grid (mouse) ou deslize (toque).</span>
-              <span>Seleção precisa ser reta.</span>
+          <div class="lineList" id="lineList"></div>
+        </div>
+
+        <div id="tab_VOCAB" style="display:none">
+          <div class="box">
+            <div class="boxTitle">
+              <b>Vocabulário do texto</b>
+              <span class="tag">Clique em “+ Deck” para adicionar</span>
             </div>
-            <button class="btn" id="btnReset">🧹 Resetar best</button>
+            <p>O vocabulário abaixo é agregado a partir das linhas (e você pode montar um deck com o que interessa).</p>
+          </div>
+          <div class="vocabGrid" id="vocabGrid"></div>
+        </div>
+
+        <div id="tab_FLASH" style="display:none">
+          <div class="box">
+            <div class="boxTitle">
+              <b>Deck (flashcards)</b>
+              <span class="tag">Spaced practice simples • local</span>
+            </div>
+            <p>Use “Revelar” e marque sua confiança. O algoritmo é leve (não é SM-2 completo), mas já dá curva boa de revisão.</p>
+          </div>
+
+          <div class="cardWrap">
+            <div class="flash" id="flashCard">
+              <div class="front" id="flashFront">—</div>
+              <div class="hint" id="flashHint">Clique em “Revelar”</div>
+              <div class="back" id="flashBack">
+                <div class="subline" id="flashReading">—</div>
+                <div class="meaning" id="flashMeaning">—</div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="row">
+                <button class="btn btnPrimary" id="btnReveal">Revelar</button>
+                <button class="btn" id="btnNext">Próximo</button>
+              </div>
+              <div class="row">
+                <button class="btn" id="btnRate1">1 • Difícil</button>
+                <button class="btn" id="btnRate2">2 • Ok</button>
+                <button class="btn" id="btnRate3">3 • Fácil</button>
+              </div>
+
+              <div class="box">
+                <div class="boxTitle"><b>Status do deck</b></div>
+                <p id="deckStatus" class="muted" style="font-size:12px;line-height:1.45">Adicione cards a partir da aba Vocabulário.</p>
+              </div>
+
+              <div class="row">
+                <button class="btn" id="btnClearDeck">Limpar deck</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab_QUIZ" style="display:none">
+          <div class="box">
+            <div class="boxTitle">
+              <b>Quiz</b>
+              <span class="tag">Vocab → significado (PT)</span>
+            </div>
+            <p>Gere perguntas rápidas com o vocabulário do texto atual (ou do deck).</p>
+            <div class="row">
+              <button class="btn btnPrimary" id="btnNewQuiz">Gerar quiz</button>
+              <select class="select" id="quizSource" style="max-width:260px">
+                <option value="TEXT">Fonte: Vocabulário do texto</option>
+                <option value="DECK">Fonte: Meu deck</option>
+              </select>
+              <select class="select" id="quizCount" style="max-width:200px">
+                <option value="5">5 questões</option>
+                <option value="8" selected>8 questões</option>
+                <option value="12">12 questões</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="quizWrap"></div>
+        </div>
+
+        <div id="tab_NOTES" style="display:none">
+          <div class="box">
+            <div class="boxTitle">
+              <b>Notas do texto</b>
+              <span class="tag">Salvo automaticamente</span>
+            </div>
+            <p>Use este espaço para escrever insights, padrões de gramática, frases úteis, etc.</p>
+            <textarea class="textarea" id="textNotes" placeholder="Ex.: 〜ながら = enquanto; 〜てしまう nuance de arrependimento; etc."></textarea>
+            <div class="row" style="justify-content:space-between;align-items:center">
+              <div class="muted" style="font-size:12px">Auto-save ativo • sem servidor</div>
+              <button class="btn" id="btnClearNotes">Limpar notas</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Focus overlay -->
+  <div class="focus" id="focusOverlay">
+    <section class="panel">
+      <div class="panelHeader">
+        <div class="row">
+          <button class="btn btnPrimary" id="btnExitFocus">
+            <span class="ic" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L12 14.83l-6.89 6.88-1.41-1.42L10.59 12 3.7 5.71 5.11 4.29 12 11.17l6.89-6.88z"/></svg>
+            </span>
+            Sair do foco
+          </button>
+          <div class="pill">Modo foco • leitura contínua</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnToggleFuriFocus">Furigana: ON</button>
+          <button class="btn" id="btnToggleReadingFocus">Leitura: ON</button>
+          <button class="btn" id="btnFontMinusFocus">A-</button>
+          <button class="btn" id="btnFontPlusFocus">A+</button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="muted" style="font-size:12px;line-height:1.45">
+          Toque/clique em uma linha para abrir detalhes. Ideal para revisão longa.
+        </div>
+        <div class="lineList" id="focusLineList"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal: New Text -->
+  <div class="modal" id="modalNew">
+    <div class="modalCard">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2>Adicionar texto personalizado</h2>
+        <button class="btn" id="btnCloseModalNew">
+          <span class="ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L12 14.83l-6.89 6.88-1.41-1.42L10.59 12 3.7 5.71 5.11 4.29 12 11.17l6.89-6.88z"/></svg>
+          </span>
+          Fechar
+        </button>
+      </div>
+      <p class="help">
+        Cole seu texto em japonês (uma frase por linha). O site vai quebrar em linhas e você pode preencher leitura, tradução, gramática e vocab por linha (opcional).
+        Tudo fica salvo localmente.
+      </p>
+
+      <div class="split">
+        <div class="col">
+          <label class="muted" style="font-size:12px">Título</label>
+          <input class="input" id="newTitle" placeholder="Ex.: 友だちと映画に行く" />
+          <label class="muted" style="font-size:12px">Nível</label>
+          <select class="select" id="newLevel">
+            <option value="N5">N5</option>
+            <option value="N4">N4</option>
+          </select>
+          <label class="muted" style="font-size:12px">Descrição</label>
+          <input class="input" id="newDesc" placeholder="Ex.: Texto curto para praticar 〜たい, partículas e vocabulário básico." />
+          <label class="muted" style="font-size:12px">Texto (uma linha por frase)</label>
+          <textarea class="textarea" id="newRaw" placeholder="Ex.&#10;今日は友だちと映画に行きます。&#10;駅で待ち合わせます。"></textarea>
+        </div>
+
+        <div class="col">
+          <div class="box">
+            <div class="boxTitle"><b>Após criar</b></div>
+            <p>1) Selecione o texto na biblioteca<br>2) Clique em cada linha e adicione notas/gramática<br>3) Adicione palavras ao deck na aba Vocabulário</p>
+          </div>
+
+          <div class="box">
+            <div class="boxTitle"><b>Atalho</b></div>
+            <p class="muted" style="font-size:12px;line-height:1.45">
+              Não quer preencher tudo agora? Sem problema. Comece só com JP e vá completando conforme revisa.
+            </p>
+          </div>
+
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn btnAccent" id="btnCreateText"><strong>Criar texto</strong></button>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="toast" id="toast"><span class="dot"></span><span id="toastTxt">—</span></div>
   </div>
 
-<script>
-(() => {
-  const $ = (id)=>document.getElementById(id);
+  <!-- Modal: Import -->
+  <div class="modal" id="modalImport">
+    <div class="modalCard">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2>Importar dados (JSON)</h2>
+        <button class="btn" id="btnCloseModalImport">Fechar</button>
+      </div>
+      <p class="help">Cole aqui o JSON exportado. Isso vai mesclar biblioteca + progresso + deck.</p>
+      <textarea class="textarea" id="importArea" placeholder='{ "texts":[...], "state":{...} }'></textarea>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn btnPrimary" id="btnDoImport">Importar agora</button>
+      </div>
+    </div>
+  </div>
 
-  // ---------- Persist ----------
-  const KEY = "jp-wordsearch-v1";
-  const load = ()=>{ try{ return JSON.parse(localStorage.getItem(KEY) || "null"); }catch{ return null; } };
-  const save = (obj)=>{ try{ localStorage.setItem(KEY, JSON.stringify(obj)); }catch{} };
-  const saved = load() || { best: 0, runSeq: 0, diff: "normal" };
-
-  // ---------- DOM ----------
-  const boardEl = $("board");
-  const wordsEl = $("words");
-  const scoreEl = $("score");
-  const bestEl = $("best");
-  const timeEl = $("time");
-  const leftEl = $("left");
-  const runIdEl = $("runId");
-  const statusEl = $("status");
-  const toastEl = $("toast");
-  const toastTxt = $("toastTxt");
-  const categoryEl = $("category");
-
-  const btnNew = $("btnNew");
-  const btnHint = $("btnHint");
-  const btnAudio = $("btnAudio");
-  const btnReset = $("btnReset");
-
-  const diffSel = $("diffSel");
-  const diffTxt = $("diffTxt");
-
-  // ---------- Utils ----------
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const pick = (arr)=>arr[(Math.random()*arr.length)|0];
-  const shuffle = (arr)=>{
-    const a = arr.slice();
-    for(let i=a.length-1;i>0;i--){
-      const j = (Math.random()*(i+1))|0;
-      [a[i],a[j]]=[a[j],a[i]];
-    }
-    return a;
-  };
-
-  const toast = (msg)=>{
-    toastTxt.textContent = msg;
-    toastEl.classList.add("show");
-    clearTimeout(toastEl._t);
-    toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1100);
-  };
-
-  // ---------- Audio (procedural) ----------
-  let audioOn = false;
-  let ac=null, master=null;
-  const ensureAudio = ()=>{
-    if(ac) return;
-    const AC = window.AudioContext || window.webkitAudioContext;
-    ac = new AC();
-    master = ac.createGain();
-    master.gain.value = 0;
-    master.connect(ac.destination);
-  };
-  const setAudio = async(on)=>{
-    audioOn = on;
-    btnAudio.setAttribute("aria-pressed", String(on));
-    btnAudio.textContent = on ? "🔊 Som" : "🔇 Som";
-    if(on){
-      ensureAudio();
-      try{ await ac.resume(); }catch{}
-      master.gain.cancelScheduledValues(ac.currentTime);
-      master.gain.setTargetAtTime(0.14, ac.currentTime, 0.06);
-    }else if(master && ac){
-      master.gain.cancelScheduledValues(ac.currentTime);
-      master.gain.setTargetAtTime(0.0, ac.currentTime, 0.05);
-    }
-  };
-  const beep = (f=440, dur=0.08, type="sine", gain=0.12)=>{
-    if(!audioOn || !ac) return;
-    const t = ac.currentTime;
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(f, t);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(gain, t+0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-    o.connect(g); g.connect(master);
-    o.start(t); o.stop(t+dur+0.02);
-  };
-  const sfx = {
-    ok(){ beep(880,0.06,"triangle",0.10); beep(1320,0.05,"sine",0.08); },
-    bad(){ beep(180,0.12,"sawtooth",0.12); },
-    win(){ beep(440,0.09,"square",0.08); beep(660,0.08,"triangle",0.08); beep(880,0.07,"sine",0.07); },
-    hint(){ beep(520,0.06,"triangle",0.08); },
-    start(){ beep(220,0.10,"square",0.08); beep(440,0.08,"triangle",0.08); }
-  };
-
-  // ---------- Japanese filler chars ----------
-  const HIRA = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわんがぎぐげござじずぜぞだぢづでどぱぴぷぺぽ";
-  const KATA = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワンガギグゲゴパピプペポ";
-  const fillerChar = ()=>{
-    const src = Math.random()<0.82 ? HIRA : KATA;
-    return src[(Math.random()*src.length)|0];
-  };
-
-  // ---------- Vocabulary pools ----------
-  const POOLS = [
-    {
-      name: "🌸 Sakura & Cidade",
-      words: [
-        {jp:"さくら", pt:"cerejeira"},
-        {jp:"とうきょう", pt:"Tóquio"},
-        {jp:"駅", pt:"estação"},
-        {jp:"でんしゃ", pt:"trem"},
-        {jp:"しんかんせん", pt:"shinkansen"},
-        {jp:"みち", pt:"caminho"},
-        {jp:"まつり", pt:"festival"},
-        {jp:"やたい", pt:"barraca (festival)"},
-        {jp:"ねおん", pt:"neon"},
-        {jp:"夜", pt:"noite"},
-        {jp:"雨", pt:"chuva"},
-        {jp:"橋", pt:"ponte"},
-      ]
-    },
-    {
-      name: "🍜 Comida",
-      words: [
-        {jp:"すし", pt:"sushi"},
-        {jp:"ラーメン", pt:"ramen"},
-        {jp:"おちゃ", pt:"chá"},
-        {jp:"みず", pt:"água"},
-        {jp:"ごはん", pt:"arroz/refeição"},
-        {jp:"たまご", pt:"ovo"},
-        {jp:"さけ", pt:"salmão / saquê (depende)"},
-        {jp:"やさい", pt:"legumes"},
-        {jp:"くだもの", pt:"frutas"},
-        {jp:"あまい", pt:"doce"},
-        {jp:"辛い", pt:"apimentado"},
-        {jp:"にく", pt:"carne"},
-      ]
-    },
-    {
-      name: "🦊 Yokai & Místico",
-      words: [
-        {jp:"きつね", pt:"raposa"},
-        {jp:"おに", pt:"ogro/demônio"},
-        {jp:"ゆうれい", pt:"fantasma"},
-        {jp:"まほう", pt:"magia"},
-        {jp:"けっかい", pt:"barreira"},
-        {jp:"おふだ", pt:"talismã"},
-        {jp:"影", pt:"sombra"},
-        {jp:"闇", pt:"escuridão"},
-        {jp:"月", pt:"lua"},
-        {jp:"血", pt:"sangue"},
-        {jp:"刀", pt:"katana/espada"},
-        {jp:"まもる", pt:"proteger"},
-      ]
-    },
-    {
-      name: "🎒 Básico (N5-ish)",
-      words: [
-        {jp:"友だち", pt:"amigo"},
-        {jp:"学生", pt:"estudante"},
-        {jp:"先生", pt:"professor"},
-        {jp:"学校", pt:"escola"},
-        {jp:"本", pt:"livro"},
-        {jp:"名前", pt:"nome"},
-        {jp:"時間", pt:"tempo"},
-        {jp:"今日", pt:"hoje"},
-        {jp:"明日", pt:"amanhã"},
-        {jp:"元気", pt:"bem/disposto"},
-        {jp:"すき", pt:"gostar"},
-        {jp:"行く", pt:"ir"},
-      ]
-    }
-  ];
-
-  // ---------- Difficulty ----------
-  const DIFF = {
-    easy:   { label:"Easy",   size:10, words: 8,  maxTries: 900 },
-    normal: { label:"Normal", size:12, words: 10, maxTries: 1200 },
-    hard:   { label:"Hard",   size:15, words: 12, maxTries: 1600 },
-  };
-
-  let diff = (saved.diff in DIFF) ? saved.diff : "normal";
-  diffSel.value = diff;
-  diffTxt.textContent = DIFF[diff].label;
-
-  // ---------- State ----------
-  let gridSize = DIFF[diff].size;
-  let grid = [];
-  let cells = [];
-  let placedWords = [];
-  let remaining = new Set();
-  let foundCoords = new Set();
-
-  let score = 0;
-  let best = saved.best|0;
-
-  let runSeq = saved.runSeq|0;
-  let running = false;
-  let startT = 0;
-  let tNow = 0;
-  let raf = 0;
-
-  // Selection
-  let selecting = false;
-  let selStart = null;
-  let selEnd = null;
-  let selLine = [];
-  let hintOn = false;
-
-  // Tap-to-select (mobile friendly)
-  let tapStart = null;
-
-  // ---------- Placement ----------
-  const DIRS = [
-    {dr:0, dc:1}, {dr:0, dc:-1},
-    {dr:1, dc:0}, {dr:-1, dc:0},
-    {dr:1, dc:1}, {dr:1, dc:-1},
-    {dr:-1, dc:1}, {dr:-1, dc:-1},
-  ];
-  const toChars = (s)=>[...s];
-  const emptyGrid = (n)=> Array.from({length:n}, ()=>Array.from({length:n}, ()=>""));
-  const inBounds = (r,c,n)=> r>=0 && c>=0 && r<n && c<n;
-
-  const canPlace = (g, wordChars, r0,c0, dr,dc)=>{
-    const n = g.length;
-    for(let i=0;i<wordChars.length;i++){
-      const r = r0 + dr*i;
-      const c = c0 + dc*i;
-      if(!inBounds(r,c,n)) return false;
-      const cur = g[r][c];
-      if(cur!=="" && cur!==wordChars[i]) return false;
-    }
-    return true;
-  };
-
-  const doPlace = (g, wordChars, r0,c0, dr,dc)=>{
-    const coords = [];
-    for(let i=0;i<wordChars.length;i++){
-      const r = r0 + dr*i;
-      const c = c0 + dc*i;
-      g[r][c] = wordChars[i];
-      coords.push({r,c});
-    }
-    return coords;
-  };
-
-  const generatePuzzle = ()=>{
-    selecting=false; selStart=null; selEnd=null; selLine=[];
-    tapStart = null;
-    foundCoords.clear();
-
-    const pool = pick(POOLS);
-    categoryEl.textContent = pool.name;
-
-    const conf = DIFF[diff];
-    gridSize = conf.size;
-    grid = emptyGrid(gridSize);
-
-    const candidates = shuffle(pool.words)
-      .sort((a,b)=>toChars(b.jp).length - toChars(a.jp).length);
-
-    const picked = [];
-    for(const w of candidates){
-      if(picked.length >= conf.words) break;
-      if(toChars(w.jp).length < 2) continue;
-      picked.push(w);
-    }
-
-    placedWords = [];
-    remaining = new Set();
-
-    for(const w of picked){
-      const chars = toChars(w.jp);
-      let placed = false;
-
-      for(let t=0; t<conf.maxTries; t++){
-        const dir = pick(DIRS);
-        const r0 = (Math.random()*gridSize)|0;
-        const c0 = (Math.random()*gridSize)|0;
-        if(!canPlace(grid, chars, r0,c0, dir.dr, dir.dc)) continue;
-        const coords = doPlace(grid, chars, r0,c0, dir.dr, dir.dc);
-        placedWords.push({jp:w.jp, pt:w.pt, coords});
-        remaining.add(placedWords.length-1);
-        placed = true;
-        break;
+  <script>
+    /***********************
+     * DATA (N5/N4 samples)
+     ***********************/
+    const builtInTexts = [
+      {
+        id: "n5_super",
+        level: "N5",
+        title: "スーパーで買い物（N5）",
+        desc: "Partículas básicas・〜たい・contagem simples",
+        tags: ["cotidiano", "compras"],
+        lines: [
+          {
+            jp: "今日はスーパーに行きます。",
+            jpRuby: "今日<rt>きょう</rt>はスーパーに行<rt>い</rt>きます。",
+            reading: "きょうは すーぱーに いきます。",
+            pt: "Hoje eu vou ao supermercado.",
+            grammar: "に = destino (ir para). は = tópico do assunto (hoje).",
+            vocab: [
+              { w:"今日", r:"きょう", m:"hoje" },
+              { w:"行く", r:"いく", m:"ir" },
+              { w:"スーパー", r:"すーぱー", m:"supermercado" }
+            ]
+          },
+          {
+            jp: "野菜を買いたいです。",
+            jpRuby: "野菜<rt>やさい</rt>を買<rt>か</rt>いたいです。",
+            reading: "やさいを かいたいです。",
+            pt: "Eu quero comprar legumes/verduras.",
+            grammar: "〜たい = desejo (quero fazer). を = objeto direto.",
+            vocab: [
+              { w:"野菜", r:"やさい", m:"legumes/verduras" },
+              { w:"買う", r:"かう", m:"comprar" }
+            ]
+          },
+          {
+            jp: "でも、お金があまりありません。",
+            jpRuby: "でも、お金<rt>かね</rt>があまりありません。",
+            reading: "でも、おかねが あまり ありません。",
+            pt: "Mas eu não tenho muito dinheiro.",
+            grammar: "あまり + negativo = 'não muito'. が = sujeito (o dinheiro).",
+            vocab: [
+              { w:"お金", r:"おかね", m:"dinheiro" },
+              { w:"あまり", r:"あまり", m:"(com negativo) não muito" },
+              { w:"ある", r:"ある", m:"haver/ter (inanimado)" }
+            ]
+          },
+          {
+            jp: "安いりんごを三つ買いました。",
+            jpRuby: "安<rt>やす</rt>いりんごを三<rt>みっ</rt>つ買<rt>か</rt>いました。",
+            reading: "やすい りんごを みっつ かいました。",
+            pt: "Comprei três maçãs baratas.",
+            grammar: "三つ = contagem (1〜10 com 〜つ). Passado: 買いました.",
+            vocab: [
+              { w:"安い", r:"やすい", m:"barato" },
+              { w:"三つ", r:"みっつ", m:"três (contagem 〜つ)" },
+              { w:"買う", r:"かう", m:"comprar" }
+            ]
+          },
+          {
+            jp: "レジでカードで払います。",
+            jpRuby: "レジでカードで払<rt>はら</rt>います。",
+            reading: "れじで かーどで はらいます。",
+            pt: "No caixa, eu pago com cartão.",
+            grammar: "で = local da ação (レジで) / meio/instrumento (カードで).",
+            vocab: [
+              { w:"レジ", r:"れじ", m:"caixa (checkout)" },
+              { w:"払う", r:"はらう", m:"pagar" },
+              { w:"カード", r:"かーど", m:"cartão" }
+            ]
+          },
+          {
+            jp: "家に帰って、すぐ料理します。",
+            jpRuby: "家<rt>いえ</rt>に帰<rt>かえ</rt>って、すぐ料理<rt>りょうり</rt>します。",
+            reading: "いえに かえって、すぐ りょうりします。",
+            pt: "Eu volto para casa e cozinho logo em seguida.",
+            grammar: "〜て = sequência de ações. すぐ = imediatamente.",
+            vocab: [
+              { w:"家", r:"いえ", m:"casa" },
+              { w:"帰る", r:"かえる", m:"voltar" },
+              { w:"料理", r:"りょうり", m:"cozinhar / culinária" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "n4_rain",
+        level: "N4",
+        title: "雨の日の約束（N4）",
+        desc: "〜のに・〜てしまう・〜そうだ・理由/contraste",
+        tags: ["clima", "encontro"],
+        lines: [
+          {
+            jp: "朝から雨が降っていました。",
+            jpRuby: "朝<rt>あさ</rt>から雨<rt>あめ</rt>が降<rt>ふ</rt>っていました。",
+            reading: "あさから あめが ふっていました。",
+            pt: "Desde a manhã estava chovendo.",
+            grammar: "〜ていました = ação em progresso/estado no passado.",
+            vocab: [
+              { w:"朝", r:"あさ", m:"manhã" },
+              { w:"雨", r:"あめ", m:"chuva" },
+              { w:"降る", r:"ふる", m:"cair (chuva/neve)" }
+            ]
+          },
+          {
+            jp: "友だちと駅で会う約束をしていたのに、電車が遅れました。",
+            jpRuby: "友<rt>とも</rt>だちと駅<rt>えき</rt>で会<rt>あ</rt>う約束<rt>やくそく</rt>をしていたのに、電車<rt>でんしゃ</rt>が遅<rt>おく</rt>れました。",
+            reading: "ともだちと えきで あう やくそくを していたのに、でんしゃが おくれました。",
+            pt: "Eu tinha combinado de encontrar um amigo na estação, mas o trem atrasou.",
+            grammar: "〜のに = contraste/contrariedade (“apesar de…/mas…”).",
+            vocab: [
+              { w:"約束", r:"やくそく", m:"promessa/combinação" },
+              { w:"電車", r:"でんしゃ", m:"trem" },
+              { w:"遅れる", r:"おくれる", m:"atrasar-se" }
+            ]
+          },
+          {
+            jp: "スマホで連絡しようと思ったら、バッテリーが切れてしまいました。",
+            jpRuby: "スマホで連絡<rt>れんらく</rt>しようと思<rt>おも</rt>ったら、バッテリーが切<rt>き</rt>れてしまいました。",
+            reading: "すまほで れんらくしようと おもったら、ばってりーが きれてしまいました。",
+            pt: "Quando pensei em avisar pelo celular, a bateria acabou (infelizmente).",
+            grammar: "〜ようと思ったら = quando fui tentar…; 〜てしまう = conclusão + nuance de arrependimento/inesperado.",
+            vocab: [
+              { w:"連絡", r:"れんらく", m:"contato/avisar" },
+              { w:"切れる", r:"きれる", m:"acabar (bateria), cortar" },
+              { w:"思う", r:"おもう", m:"pensar/achar" }
+            ]
+          },
+          {
+            jp: "しかたがないので、近くのカフェで待つことにしました。",
+            jpRuby: "しかたがないので、近<rt>ちか</rt>くのカフェで待<rt>ま</rt>つことにしました。",
+            reading: "しかたがないので、ちかくの かふぇで まつことにしました。",
+            pt: "Como não tinha jeito, decidi esperar em um café próximo.",
+            grammar: "V-辞書形 + ことにする = decidir fazer (decisão).",
+            vocab: [
+              { w:"しかたがない", r:"しかたがない", m:"não tem jeito" },
+              { w:"近く", r:"ちかく", m:"perto / nas proximidades" },
+              { w:"待つ", r:"まつ", m:"esperar" }
+            ]
+          },
+          {
+            jp: "窓の外を見ると、雨が弱くなりそうでした。",
+            jpRuby: "窓<rt>まど</rt>の外<rt>そと</rt>を見<rt>み</rt>ると、雨<rt>あめ</rt>が弱<rt>よわ</rt>くなりそうでした。",
+            reading: "まどの そとを みると、あめが よわく なりそうでした。",
+            pt: "Ao olhar para fora da janela, parecia que a chuva ia enfraquecer.",
+            grammar: "〜そうだ = parece que vai… (aparência).",
+            vocab: [
+              { w:"窓", r:"まど", m:"janela" },
+              { w:"外", r:"そと", m:"fora" },
+              { w:"弱くなる", r:"よわくなる", m:"enfraquecer" }
+            ]
+          },
+          {
+            jp: "しばらくしてから友だちが来て、「ごめん、迷ってしまった」と言いました。",
+            jpRuby: "しばらくしてから友<rt>とも</rt>だちが来<rt>き</rt>て、「ごめん、迷<rt>まよ</rt>ってしまった」と言<rt>い</rt>いました。",
+            reading: "しばらくしてから ともだちが きて、「ごめん、まよってしまった」といいました。",
+            pt: "Depois de um tempo, meu amigo chegou e disse: “Desculpa, eu me perdi.”",
+            grammar: "〜てしまった = acabou acontecendo (com arrependimento).",
+            vocab: [
+              { w:"しばらく", r:"しばらく", m:"por um tempo" },
+              { w:"迷う", r:"まよう", m:"perder-se / ficar indeciso" },
+              { w:"言う", r:"いう", m:"dizer" }
+            ]
+          }
+        ]
       }
-      // se não couber, ignora (raro) — puzzle continua
-      if(!placed) {}
-    }
+    ];
 
-    for(let r=0;r<gridSize;r++){
-      for(let c=0;c<gridSize;c++){
-        if(grid[r][c]==="") grid[r][c]=fillerChar();
+    /***********************
+     * STATE + STORAGE
+     ***********************/
+    const LS_KEY = "nihongo_textlab_v1";
+    const defaultState = {
+      texts: [],            // custom texts
+      activeTextId: null,
+      ui: {
+        tab: "TAB_TEXT",
+        showFurigana: true,
+        showReading: true,
+        fontScale: 1
+      },
+      progress: {
+        // [textId]: { doneLines: { [idx]: true }, bookmarked: boolean, notes: string }
+      },
+      deck: {
+        // wordKey: { w,r,m, due:number, ease:number, streak:number, last:number, seen:number }
+      }
+    };
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        return mergeDeep(structuredClone(defaultState), parsed);
+      }catch(e){
+        console.warn("loadState failed", e);
+        return structuredClone(defaultState);
       }
     }
-
-    renderBoard();
-    renderWords();
-
-    score = 0;
-    scoreEl.textContent = score|0;
-    bestEl.textContent = best|0;
-
-    runSeq++;
-    runIdEl.textContent = "#" + String(runSeq).padStart(3,"0");
-    leftEl.textContent = String(remaining.size);
-
-    running = true;
-    startT = performance.now();
-    cancelAnimationFrame(raf);
-    tick();
-    toast("Nova grade gerada. Bora caçar.");
-    sfx.start();
-
-    save({best, runSeq, diff});
-  };
-
-  const renderBoard = ()=>{
-    boardEl.innerHTML = "";
-    boardEl.style.gridTemplateColumns = `repeat(${gridSize}, var(--cell))`;
-    boardEl.style.gridTemplateRows = `repeat(${gridSize}, var(--cell))`;
-
-    cells = Array.from({length:gridSize}, ()=>Array.from({length:gridSize}, ()=>null));
-
-    for(let r=0;r<gridSize;r++){
-      for(let c=0;c<gridSize;c++){
-        const d = document.createElement("div");
-        d.className = "cell";
-        d.textContent = grid[r][c];
-        d.dataset.r = String(r);
-        d.dataset.c = String(c);
-        d.setAttribute("role","button");
-        cells[r][c]=d;
-        boardEl.appendChild(d);
-      }
+    function saveState(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+      refreshKPIs();
     }
-  };
 
-  const renderWords = ()=>{
-    wordsEl.innerHTML = "";
-    placedWords.forEach((w, idx)=>{
-      const item = document.createElement("div");
-      item.className = "w";
-      item.id = "w_" + idx;
-      item.innerHTML = `
-        <div>
-          <div class="jp">${w.jp}</div>
-          <div class="pt">${w.pt}</div>
-        </div>
-        <div class="tag">PENDENTE</div>
+    function mergeDeep(target, source){
+      if(typeof source !== "object" || source === null) return target;
+      for(const k of Object.keys(source)){
+        if(Array.isArray(source[k])) target[k] = source[k];
+        else if(typeof source[k] === "object" && source[k] !== null){
+          if(typeof target[k] !== "object" || target[k] === null) target[k] = {};
+          target[k] = mergeDeep(target[k], source[k]);
+        }else{
+          target[k] = source[k];
+        }
+      }
+      return target;
+    }
+
+    let state = loadState();
+
+    /***********************
+     * HELPERS
+     ***********************/
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+    const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+
+    function allTexts(){
+      // built-ins + custom
+      return [...builtInTexts, ...(state.texts || [])];
+    }
+
+    function getTextById(id){
+      return allTexts().find(t => t.id === id) || null;
+    }
+
+    function ensureProgress(textId){
+      if(!state.progress[textId]){
+        state.progress[textId] = { doneLines:{}, bookmarked:false, notes:"" };
+      }
+      return state.progress[textId];
+    }
+
+    function wordKey(v){ return `${v.w}__${v.r}__${v.m}`; }
+
+    function escapeHTML(s){
+      return (s ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+      }[m]));
+    }
+
+    /***********************
+     * THEME ANIMATION
+     ***********************/
+    function startTheme(){
+      const label = $("#themeLabel");
+      let hue = state.ui?.hue ?? 200;
+      setInterval(()=>{
+        hue = (hue + 9) % 360;
+        document.documentElement.style.setProperty("--hue", hue);
+        if(state.ui) state.ui.hue = hue;
+        if(label) label.textContent = `hsl(${hue})`;
+      }, 3500);
+      document.documentElement.style.setProperty("--hue", hue);
+      if(label) label.textContent = `hsl(${hue})`;
+    }
+
+    /***********************
+     * RENDER: LIBRARY
+     ***********************/
+    function renderLibrary(){
+      const list = $("#libraryList");
+      const level = $("#levelFilter").value;
+      const q = $("#searchInput").value.trim().toLowerCase();
+
+      const texts = allTexts()
+        .filter(t => level === "ALL" ? true : t.level === level)
+        .filter(t => {
+          if(!q) return true;
+          const hay = `${t.title} ${t.desc} ${(t.tags||[]).join(" ")} ` +
+                      (t.lines||[]).map(l=>l.jp).join(" ");
+          return hay.toLowerCase().includes(q);
+        });
+
+      $("#kpiTexts").textContent = texts.length;
+
+      list.innerHTML = texts.map(t=>{
+        const p = ensureProgress(t.id);
+        const done = Object.keys(p.doneLines||{}).length;
+        const total = (t.lines||[]).length;
+        const pct = total ? Math.round((done/total)*100) : 0;
+
+        return `
+          <div class="item ${t.id===state.activeTextId ? "active":""}" data-id="${escapeHTML(t.id)}">
+            <div class="itemTop">
+              <div style="min-width:0">
+                <p class="itemTitle">${escapeHTML(t.title)}</p>
+                <p class="itemDesc">${escapeHTML(t.desc || "")}</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+                <span class="tag"><b>${escapeHTML(t.level)}</b></span>
+                <span class="tag" title="Linhas revisadas">${done}/${total} • ${pct}%</span>
+                <span class="tag" title="Favorito">${p.bookmarked ? "★" : "☆"}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("") || `<div class="muted" style="font-size:12px">Nada encontrado.</div>`;
+
+      $$(".item", list).forEach(el=>{
+        el.addEventListener("click", ()=>{
+          const id = el.getAttribute("data-id");
+          setActiveText(id);
+        });
+      });
+    }
+
+    /***********************
+     * RENDER: MAIN (tabs)
+     ***********************/
+    function setActiveText(id){
+      state.activeTextId = id;
+      ensureProgress(id);
+      saveState();
+      renderLibrary();
+      renderMain();
+    }
+
+    function setTab(tab){
+      state.ui.tab = tab;
+      saveState();
+      renderMain();
+    }
+
+    function renderMain(){
+      const text = getTextById(state.activeTextId);
+      const empty = $("#emptyState");
+
+      // controls global
+      applyFontScale(state.ui.fontScale);
+      syncToggleButtons();
+
+      if(!text){
+        empty.style.display = "block";
+        $("#tab_TEXT").style.display = "none";
+        $("#tab_VOCAB").style.display = "none";
+        $("#tab_FLASH").style.display = "none";
+        $("#tab_QUIZ").style.display = "none";
+        $("#tab_NOTES").style.display = "none";
+        $("#textTitle").textContent = "Selecione um texto";
+        $("#textMeta").innerHTML = "";
+        return;
+      }
+
+      empty.style.display = "none";
+
+      $("#textTitle").textContent = text.title;
+      const p = ensureProgress(text.id);
+
+      $("#textMeta").innerHTML = `
+        <span class="tag">📘 <b>${escapeHTML(text.level)}</b></span>
+        <span class="tag">🧾 ${text.lines.length} linhas</span>
+        <span class="tag">✅ ${Object.keys(p.doneLines||{}).length} revisadas</span>
+        <span class="tag">${p.bookmarked ? "★ Favorito" : "☆ Não favorito"}</span>
+        ${(text.tags||[]).slice(0,3).map(t=>`<span class="tag">#${escapeHTML(t)}</span>`).join("")}
       `;
-      wordsEl.appendChild(item);
-    });
-  };
 
-  // ---------- Timer ----------
-  const tick = ()=>{
-    if(!running) return;
-    tNow = (performance.now() - startT)/1000;
-    timeEl.textContent = tNow.toFixed(1) + "s";
-    raf = requestAnimationFrame(tick);
-  };
+      // tabs show/hide
+      const tab = state.ui.tab || "TAB_TEXT";
+      const map = {
+        TAB_TEXT: "#tab_TEXT",
+        TAB_VOCAB: "#tab_VOCAB",
+        TAB_FLASH: "#tab_FLASH",
+        TAB_QUIZ: "#tab_QUIZ",
+        TAB_NOTES: "#tab_NOTES"
+      };
+      for(const k of Object.keys(map)){
+        $(map[k]).style.display = (k === tab) ? "block" : "none";
+      }
+      $$(".tab").forEach(t=>{
+        t.classList.toggle("active", t.dataset.tab === tab);
+      });
 
-  const scoreForWord = (len)=>{
-    const timeFactor = clamp(1.35 - (tNow/120), 0.75, 1.35);
-    return Math.round((18 + len*10) * timeFactor);
-  };
+      // render each tab content
+      renderLines(text, $("#lineList"));
+      renderLines(text, $("#focusLineList"), { isFocus:true });
 
-  // ---------- Selection core ----------
-  const key = (r,c)=>`${r},${c}`;
+      renderVocab(text);
+      renderNotes(text);
+      renderDeckUI();
+      // quiz not auto-generated
+    }
 
-  const clearTempSelection = ()=>{
-    for(let r=0;r<gridSize;r++){
-      for(let c=0;c<gridSize;c++){
-        const el = cells[r][c];
-        if(el && el.classList.contains("sel") && !el.classList.contains("found")){
-          el.classList.remove("sel");
+    function renderLines(text, root, opts={}){
+      const p = ensureProgress(text.id);
+      const showF = !!state.ui.showFurigana;
+      const showR = !!state.ui.showReading;
+
+      root.innerHTML = text.lines.map((ln, idx)=>{
+        const done = !!p.doneLines?.[idx];
+        const jp = showF && ln.jpRuby ? ln.jpRuby : escapeHTML(ln.jp);
+        const reading = showR ? `<div class="reading">${escapeHTML(ln.reading||"")}</div>` : "";
+
+        const vocabChips = (ln.vocab||[]).slice(0,8).map(v=>`<span class="tag" title="${escapeHTML(v.r)} • ${escapeHTML(v.m)}">${escapeHTML(v.w)}</span>`).join("");
+
+        const noteKey = `lineNote_${text.id}_${idx}`;
+        const lineNote = (state.progress[text.id]?.[noteKey]) || "";
+
+        return `
+          <div class="lineCard" data-idx="${idx}">
+            <div class="lineTop">
+              <div class="lineLeft">
+                <p class="jp">${jp}</p>
+                ${reading}
+                <div class="row" style="margin-top:8px">${vocabChips || `<span class="muted" style="font-size:12px">Sem vocab marcado nesta linha.</span>`}</div>
+              </div>
+              <div class="lineBadges">
+                <label class="chk" title="Marque quando revisar esta linha">
+                  <input type="checkbox" ${done ? "checked":""} />
+                  Revisada
+                </label>
+                <button class="btn" data-action="toggle">Detalhes</button>
+              </div>
+            </div>
+
+            <div class="details">
+              <div class="notes">
+                <div class="box">
+                  <div class="boxTitle"><b>Tradução (PT)</b></div>
+                  <p class="pt">${escapeHTML(ln.pt || "—")}</p>
+                </div>
+
+                <div class="box">
+                  <div class="boxTitle"><b>Gramática / Pontos de atenção</b></div>
+                  <p>${escapeHTML(ln.grammar || "—")}</p>
+                </div>
+
+                <div class="box">
+                  <div class="boxTitle"><b>Vocabulário (linha)</b></div>
+                  <p>
+                    ${(ln.vocab||[]).map(v=>`<span class="tag" style="margin:4px 6px 0 0">🧩 <b>${escapeHTML(v.w)}</b> ${escapeHTML(v.r)} • ${escapeHTML(v.m)}</span>`).join("") || "—"}
+                  </p>
+                  <div class="row" style="margin-top:10px">
+                    <button class="btn" data-action="addLineVocab">+ Deck (toda a linha)</button>
+                    <button class="btn" data-action="copyJP">Copiar JP</button>
+                  </div>
+                </div>
+
+                <div class="box">
+                  <div class="boxTitle"><b>Minha nota desta linha</b></div>
+                  <textarea class="textarea" data-action="lineNote" placeholder="Escreva aqui (auto-save)..." style="min-height:84px">${escapeHTML(lineNote)}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      // bind
+      $$(".lineCard", root).forEach(card=>{
+        const idx = Number(card.getAttribute("data-idx"));
+        const chk = $("input[type=checkbox]", card);
+        const btnToggle = $("[data-action=toggle]", card);
+
+        chk.addEventListener("change", ()=>{
+          const pr = ensureProgress(text.id);
+          if(chk.checked) pr.doneLines[idx] = true;
+          else delete pr.doneLines[idx];
+          saveState();
+          refreshKPIs();
+          // update meta
+          $("#textMeta").innerHTML = $("#textMeta").innerHTML; // noop-ish
+          renderLibrary();
+          // (não re-render tudo pra evitar perder abertura)
+        });
+
+        btnToggle.addEventListener("click", ()=>{
+          card.classList.toggle("open");
+        });
+
+        // clicking JP area toggles too (nice UX)
+        $(".jp", card).addEventListener("click", ()=> card.classList.toggle("open"));
+
+        // line note autosave
+        const noteArea = $("[data-action=lineNote]", card);
+        noteArea.addEventListener("input", ()=>{
+          const key = `lineNote_${text.id}_${idx}`;
+          state.progress[text.id][key] = noteArea.value;
+          saveState();
+        });
+
+        // actions
+        const btnAdd = $("[data-action=addLineVocab]", card);
+        btnAdd.addEventListener("click", ()=>{
+          const ln = text.lines[idx];
+          addVocabToDeck(ln.vocab||[]);
+          renderDeckUI();
+          refreshKPIs();
+        });
+
+        const btnCopy = $("[data-action=copyJP]", card);
+        btnCopy.addEventListener("click", async ()=>{
+          try{
+            await navigator.clipboard.writeText(text.lines[idx].jp);
+            toast("JP copiado ✅");
+          }catch{
+            toast("Não foi possível copiar (permissão).");
+          }
+        });
+      });
+    }
+
+    function renderVocab(text){
+      const grid = $("#vocabGrid");
+      const vocab = aggregateVocab(text);
+
+      if(!vocab.length){
+        grid.innerHTML = `<div class="muted" style="font-size:12px">Sem vocabulário neste texto.</div>`;
+        return;
+      }
+
+      grid.innerHTML = vocab.map(v=>{
+        const k = wordKey(v);
+        const inDeck = !!state.deck[k];
+        return `
+          <div class="vocabCard">
+            <div>
+              <p class="w">${escapeHTML(v.w)}</p>
+              <div class="r">${escapeHTML(v.r)}</div>
+              <div class="m">${escapeHTML(v.m)}</div>
+              <div style="margin-top:8px">
+                <span class="tag" title="Ocorrências no texto">📍 ${v.count}x</span>
+              </div>
+            </div>
+            <div class="vocabRight">
+              <button class="btn ${inDeck ? "" : "btnPrimary"}" data-add="${escapeHTML(k)}">
+                ${inDeck ? "No deck ✓" : "+ Deck"}
+              </button>
+              <button class="btn" data-remove="${escapeHTML(k)}">Remover</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      $$("[data-add]", grid).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const k = btn.getAttribute("data-add");
+          const v = vocab.find(x=>wordKey(x)===k);
+          if(v) addVocabToDeck([v]);
+          renderVocab(text);
+          renderDeckUI();
+          refreshKPIs();
+          toast("Adicionado ao deck ✅");
+        });
+      });
+
+      $$("[data-remove]", grid).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const k = btn.getAttribute("data-remove");
+          if(state.deck[k]) delete state.deck[k];
+          saveState();
+          renderVocab(text);
+          renderDeckUI();
+          refreshKPIs();
+          toast("Removido do deck.");
+        });
+      });
+    }
+
+    function renderNotes(text){
+      const area = $("#textNotes");
+      const p = ensureProgress(text.id);
+      area.value = p.notes || "";
+      area.oninput = ()=>{
+        p.notes = area.value;
+        saveState();
+      };
+    }
+
+    /***********************
+     * VOCAB AGGREGATION + DECK
+     ***********************/
+    function aggregateVocab(text){
+      const map = new Map();
+      for(const ln of (text.lines||[])){
+        for(const v of (ln.vocab||[])){
+          const k = wordKey(v);
+          if(!map.has(k)) map.set(k, { ...v, count: 0 });
+          map.get(k).count += 1;
         }
       }
-    }
-  };
-
-  const applyLineHighlight = (line)=>{
-    clearTempSelection();
-    for(const p of line){
-      const el = cells[p.r][p.c];
-      if(!el) continue;
-      if(el.classList.contains("found")) continue;
-      el.classList.add("sel");
-    }
-  };
-
-  const getLine = (a,b)=>{
-    const r1=a.r, c1=a.c, r2=b.r, c2=b.c;
-    const dr = r2-r1;
-    const dc = c2-c1;
-
-    const sgn = (x)=> x===0 ? 0 : (x>0 ? 1 : -1);
-    const sdr = sgn(dr);
-    const sdc = sgn(dc);
-
-    const adr = Math.abs(dr);
-    const adc = Math.abs(dc);
-
-    if(!(dr===0 || dc===0 || adr===adc)) return [];
-
-    const steps = Math.max(adr, adc);
-    const line = [];
-    for(let i=0;i<=steps;i++){
-      const rr = r1 + sdr*i;
-      const cc = c1 + sdc*i;
-      if(!inBounds(rr,cc,gridSize)) return [];
-      line.push({r:rr,c:cc});
-    }
-    return line;
-  };
-
-  const lineToString = (line)=>{
-    let s="";
-    for(const p of line) s += grid[p.r][p.c];
-    return s;
-  };
-
-  const flashBad = (line)=>{
-    for(const p of line){
-      const el = cells[p.r][p.c];
-      if(!el) continue;
-      if(el.classList.contains("found")) continue;
-      el.classList.add("badflash");
-      setTimeout(()=>el.classList.remove("badflash"), 140);
-    }
-  };
-
-  const markFound = (idx)=>{
-    const w = placedWords[idx];
-    for(const p of w.coords){
-      foundCoords.add(key(p.r,p.c));
-      const el = cells[p.r][p.c];
-      if(el){
-        el.classList.remove("sel");
-        el.classList.add("found");
-      }
-    }
-    remaining.delete(idx);
-    leftEl.textContent = String(remaining.size);
-
-    const item = $("w_"+idx);
-    if(item){
-      item.classList.add("done");
-      const tag = item.querySelector(".tag");
-      if(tag) tag.textContent = "OK";
-    }
-  };
-
-  const finishIfWin = ()=>{
-    if(remaining.size !== 0) return;
-
-    running = false;
-    cancelAnimationFrame(raf);
-
-    const winBonus = Math.round(clamp(900 - tNow*18, 120, 900));
-    score += winBonus;
-    scoreEl.textContent = score|0;
-
-    if(score > best){
-      best = score|0;
-      bestEl.textContent = best|0;
-      save({best, runSeq, diff});
+      return Array.from(map.values()).sort((a,b)=>b.count-a.count || a.w.localeCompare(b.w));
     }
 
-    toast(`🏮 Limpo. +${winBonus} bônus. Nova partida...`);
-    sfx.win();
-
-    setTimeout(()=>generatePuzzle(), 900);
-  };
-
-  const tryResolveSelection = ()=>{
-    if(!selLine.length) return;
-
-    const s1 = lineToString(selLine);
-    const s2 = [...s1].reverse().join("");
-
-    let hit = -1;
-    for(const idx of remaining){
-      if(placedWords[idx].jp === s1 || placedWords[idx].jp === s2){
-        hit = idx; break;
-      }
-    }
-
-    if(hit !== -1){
-      const len = [...placedWords[hit].jp].length;
-      const add = scoreForWord(len);
-      score += add;
-      scoreEl.textContent = score|0;
-
-      markFound(hit);
-      toast(`✅ ${placedWords[hit].jp}  +${add}`);
-      sfx.ok();
-
-      finishIfWin();
-    }else{
-      flashBad(selLine);
-      toast("❌ Não é palavra da lista.");
-      sfx.bad();
-    }
-  };
-
-  // ---------- Hint ----------
-  const setHint = (on)=>{
-    hintOn = on;
-    btnHint.setAttribute("aria-pressed", String(on));
-    if(on){
-      btnHint.textContent = "👁️ Dica ON";
-      statusEl.innerHTML = `<span>Modo Dica: a primeira letra de 1 palavra restante pisca no grid.</span><span>(Desliga em 4s)</span>`;
-      sfx.hint();
-
-      const idx = pick([...remaining]);
-      if(idx !== undefined){
-        const p = placedWords[idx].coords[0];
-        const el = cells[p.r][p.c];
-        if(el){
-          let k=0;
-          const iv = setInterval(()=>{
-            if(!hintOn){ clearInterval(iv); return; }
-            el.classList.toggle("sel");
-            k++;
-            if(k>10){ clearInterval(iv); el.classList.remove("sel"); }
-          }, 180);
+    function addVocabToDeck(arr){
+      const now = Date.now();
+      for(const v of arr){
+        const k = wordKey(v);
+        if(!state.deck[k]){
+          state.deck[k] = {
+            w: v.w, r: v.r, m: v.m,
+            due: now, ease: 2.2, streak: 0, last: 0, seen: 0
+          };
         }
       }
-      setTimeout(()=>setHint(false), 4000);
-    }else{
-      btnHint.textContent = "👁️ Dica";
-      statusEl.innerHTML = `<span>Arraste no grid (mouse) ou deslize (toque).</span><span>Seleção precisa ser reta.</span>`;
-      clearTempSelection();
+      saveState();
     }
-  };
 
-  // ---------- Robust cell detection (FIX) ----------
-  const cellFromPoint = (clientX, clientY)=>{
-    const el = document.elementFromPoint(clientX, clientY);
-    if(!el) return null;
-    const cell = el.closest?.(".cell");
-    if(!cell) return null;
-    const r = Number(cell.dataset.r);
-    const c = Number(cell.dataset.c);
-    if(Number.isNaN(r) || Number.isNaN(c)) return null;
-    return {r,c, el:cell};
-  };
-
-  // ---------- Pointer events (mouse + touch via pointer) ----------
-  const onPointerDown = (e)=>{
-    // unlock audio on gesture
-    if(ac) ac.resume().catch(()=>{});
-    const hit = cellFromPoint(e.clientX, e.clientY);
-    if(!hit) return;
-
-    e.preventDefault();
-    selecting = true;
-    tapStart = null; // if dragging, ignore tap mode
-    selStart = {r:hit.r, c:hit.c};
-    selEnd = {r:hit.r, c:hit.c};
-    selLine = getLine(selStart, selEnd);
-    applyLineHighlight(selLine);
-
-    try{ boardEl.setPointerCapture(e.pointerId); }catch{}
-  };
-
-  const onPointerMove = (e)=>{
-    if(!selecting) return;
-    e.preventDefault();
-    const hit = cellFromPoint(e.clientX, e.clientY);
-    if(!hit) return;
-    selEnd = {r:hit.r, c:hit.c};
-    selLine = getLine(selStart, selEnd);
-    applyLineHighlight(selLine);
-  };
-
-  const onPointerUp = (e)=>{
-    if(!selecting) return;
-    e.preventDefault();
-    selecting = false;
-    tryResolveSelection();
-    clearTempSelection();
-  };
-
-  boardEl.addEventListener("pointerdown", onPointerDown, {passive:false});
-  boardEl.addEventListener("pointermove", onPointerMove, {passive:false});
-  window.addEventListener("pointerup", onPointerUp, {passive:false});
-
-  // ---------- Tap-to-select fallback (2 taps) ----------
-  boardEl.addEventListener("click", (e)=>{
-    const cell = e.target.closest?.(".cell");
-    if(!cell) return;
-
-    const r = Number(cell.dataset.r);
-    const c = Number(cell.dataset.c);
-    if(Number.isNaN(r) || Number.isNaN(c)) return;
-
-    // ignore if dragging selection is active
-    if(selecting) return;
-
-    if(!tapStart){
-      tapStart = {r,c};
-      selStart = {r,c};
-      selEnd = {r,c};
-      selLine = [{r,c}];
-      applyLineHighlight(selLine);
-      toast("Início marcado. Toque no fim da palavra.");
-    }else{
-      selStart = tapStart;
-      selEnd = {r,c};
-      selLine = getLine(selStart, selEnd);
-      applyLineHighlight(selLine);
-      tapStart = null;
-
-      setTimeout(()=>{
-        tryResolveSelection();
-        clearTempSelection();
-      }, 60);
+    function deckDueList(){
+      const now = Date.now();
+      return Object.values(state.deck)
+        .filter(c => (c.due ?? 0) <= now)
+        .sort((a,b)=>(a.due??0)-(b.due??0));
     }
-  });
 
-  // ---------- Controls ----------
-  const setDiff = (d)=>{
-    diff = d;
-    diffTxt.textContent = DIFF[diff].label;
-    save({best, runSeq, diff});
-    generatePuzzle();
-  };
+    let currentCardKey = null;
 
-  btnNew.addEventListener("click", ()=>generatePuzzle());
-  btnHint.addEventListener("click", ()=>setHint(!hintOn));
-  btnAudio.addEventListener("click", ()=>setAudio(!audioOn));
-  btnReset.addEventListener("click", ()=>{
-    best = 0;
-    bestEl.textContent = "0";
-    save({best, runSeq, diff});
-    toast("Best resetado.");
-  });
-  diffSel.addEventListener("change", (e)=>setDiff(e.target.value));
+    function pickNextCard(){
+      const due = deckDueList();
+      if(due.length){
+        currentCardKey = wordKey(due[0]);
+        return state.deck[currentCardKey];
+      }
+      // if none due, pick soonest
+      const all = Object.values(state.deck);
+      if(!all.length){ currentCardKey = null; return null; }
+      all.sort((a,b)=>(a.due??0)-(b.due??0));
+      currentCardKey = wordKey(all[0]);
+      return state.deck[currentCardKey];
+    }
 
-  window.addEventListener("keydown", (e)=>{
-    const k = e.key.toLowerCase();
-    if(k==="n") generatePuzzle();
-    if(k==="h") setHint(!hintOn);
-    if(k==="m") setAudio(!audioOn);
-  });
+    function renderDeckUI(){
+      const card = pickNextCard();
+      const flash = $("#flashCard");
+      const front = $("#flashFront");
+      const reading = $("#flashReading");
+      const meaning = $("#flashMeaning");
+      const status = $("#deckStatus");
 
-  // ---------- Init ----------
-  bestEl.textContent = String(best|0);
-  runSeq = saved.runSeq|0;
-  diffSel.value = diff;
-  diffTxt.textContent = DIFF[diff].label;
+      flash.classList.remove("revealed");
 
-  generatePuzzle();
-})();
-</script>
+      const total = Object.keys(state.deck).length;
+      const dueCount = deckDueList().length;
+
+      $("#kpiDeck").textContent = total;
+
+      if(!card){
+        front.textContent = "—";
+        reading.textContent = "";
+        meaning.textContent = "Adicione palavras ao deck na aba Vocabulário.";
+        status.textContent = `Deck vazio.`;
+        return;
+      }
+
+      front.textContent = card.w;
+      reading.textContent = card.r || "";
+      meaning.textContent = card.m || "";
+      status.textContent = `Cards: ${total} • Devidos agora: ${dueCount} • Próximo: ${new Date(card.due).toLocaleString()}`;
+    }
+
+    function rateCard(score){
+      // score 1..3
+      if(!currentCardKey || !state.deck[currentCardKey]) return;
+      const c = state.deck[currentCardKey];
+      const now = Date.now();
+      c.seen = (c.seen||0) + 1;
+      c.last = now;
+
+      // Very lightweight scheduling:
+      // score 1: reset streak, due soon
+      // score 2: modest interval
+      // score 3: expand interval more
+      const base = 60 * 60 * 1000; // 1h
+      let interval;
+      if(score === 1){
+        c.streak = 0;
+        c.ease = clamp((c.ease||2.2) - 0.15, 1.3, 3.0);
+        interval = base * 3; // 3h
+      }else if(score === 2){
+        c.streak = (c.streak||0) + 1;
+        c.ease = clamp((c.ease||2.2) + 0.05, 1.3, 3.0);
+        interval = base * 12 * (c.ease||2.2) * Math.max(1, c.streak/2);
+      }else{
+        c.streak = (c.streak||0) + 1;
+        c.ease = clamp((c.ease||2.2) + 0.12, 1.3, 3.0);
+        interval = base * 36 * (c.ease||2.2) * Math.max(1, c.streak/1.5);
+      }
+      c.due = now + interval;
+
+      saveState();
+      renderDeckUI();
+    }
+
+    /***********************
+     * QUIZ
+     ***********************/
+    function buildQuizItems(source, count){
+      let pool = [];
+      if(source === "DECK"){
+        pool = Object.values(state.deck).map(x=>({ w:x.w, r:x.r, m:x.m }));
+      }else{
+        const text = getTextById(state.activeTextId);
+        if(text) pool = aggregateVocab(text).map(x=>({ w:x.w, r:x.r, m:x.m }));
+      }
+      pool = pool.filter(x=>x.w && x.m);
+      // unique by wordKey
+      const uniq = new Map();
+      for(const v of pool) uniq.set(wordKey(v), v);
+      const arr = Array.from(uniq.values());
+      shuffle(arr);
+      return arr.slice(0, count);
+    }
+
+    function renderQuiz(){
+      const wrap = $("#quizWrap");
+      wrap.innerHTML = "";
+
+      const src = $("#quizSource").value;
+      const count = Number($("#quizCount").value);
+      const items = buildQuizItems(src, count);
+
+      if(items.length < 3){
+        wrap.innerHTML = `<div class="muted" style="font-size:12px;margin-top:12px">Não há vocabulário suficiente para montar um quiz (mínimo ~3). Adicione mais palavras ao deck ou use um texto com mais vocab.</div>`;
+        return;
+      }
+
+      const allMeanings = items.map(x=>x.m);
+
+      items.forEach((it, idx)=>{
+        const correct = it.m;
+        const wrong = shuffle(allMeanings.filter(m=>m!==correct)).slice(0,3);
+        const choices = shuffle([correct, ...wrong]);
+
+        const el = document.createElement("div");
+        el.className = "quizQ";
+        el.innerHTML = `
+          <h3>Q${idx+1}. O que significa <span style="font-family:var(--jp);font-weight:900">${escapeHTML(it.w)}</span> (${escapeHTML(it.r||"")})?</h3>
+          <div class="choices">
+            ${choices.map(c=>`
+              <div class="choice" data-c="${escapeHTML(c)}" data-correct="${escapeHTML(correct)}">
+                <div>${escapeHTML(c)}</div>
+                <small>clique</small>
+              </div>
+            `).join("")}
+          </div>
+        `;
+        wrap.appendChild(el);
+
+        $$(".choice", el).forEach(ch=>{
+          ch.addEventListener("click", ()=>{
+            const picked = ch.getAttribute("data-c");
+            const corr = ch.getAttribute("data-correct");
+            // lock
+            $$(".choice", el).forEach(x=>x.style.pointerEvents="none");
+            $$(".choice", el).forEach(x=>{
+              const val = x.getAttribute("data-c");
+              if(val === corr) x.classList.add("good");
+              else if(val === picked) x.classList.add("bad");
+            });
+          });
+        });
+      });
+    }
+
+    function shuffle(a){
+      const arr = a.slice();
+      for(let i=arr.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+
+    /***********************
+     * UI TOGGLES / FONT
+     ***********************/
+    function applyFontScale(scale){
+      state.ui.fontScale = clamp(scale, 0.85, 1.25);
+      document.documentElement.style.setProperty("--fontScale", state.ui.fontScale);
+      saveState();
+    }
+
+    function syncToggleButtons(){
+      const f = state.ui.showFurigana ? "ON" : "OFF";
+      const r = state.ui.showReading ? "ON" : "OFF";
+      ["#btnToggleFuri","#btnToggleFuri2","#btnToggleFuriFocus"].forEach(id=>{
+        const b = $(id); if(b) b.textContent = `Furigana: ${f}`;
+      });
+      ["#btnToggleReading","#btnToggleReading2","#btnToggleReadingFocus"].forEach(id=>{
+        const b = $(id); if(b) b.textContent = `Leitura: ${r}`;
+      });
+    }
+
+    function toggleFurigana(){
+      state.ui.showFurigana = !state.ui.showFurigana;
+      saveState();
+      syncToggleButtons();
+      renderMain();
+    }
+
+    function toggleReading(){
+      state.ui.showReading = !state.ui.showReading;
+      saveState();
+      syncToggleButtons();
+      renderMain();
+    }
+
+    function fontPlus(){ applyFontScale((state.ui.fontScale||1) + 0.05); renderMain(); }
+    function fontMinus(){ applyFontScale((state.ui.fontScale||1) - 0.05); renderMain(); }
+
+    /***********************
+     * BOOKMARK / BULK OPEN
+     ***********************/
+    function toggleBookmark(){
+      const text = getTextById(state.activeTextId);
+      if(!text) return;
+      const p = ensureProgress(text.id);
+      p.bookmarked = !p.bookmarked;
+      saveState();
+      renderLibrary();
+      renderMain();
+      toast(p.bookmarked ? "Favoritado ★" : "Desfavoritado ☆");
+    }
+
+    function expandAll(){
+      $$(".lineCard", $("#lineList")).forEach(c=>c.classList.add("open"));
+      $$(".lineCard", $("#focusLineList")).forEach(c=>c.classList.add("open"));
+    }
+    function collapseAll(){
+      $$(".lineCard", $("#lineList")).forEach(c=>c.classList.remove("open"));
+      $$(".lineCard", $("#focusLineList")).forEach(c=>c.classList.remove("open"));
+    }
+
+    /***********************
+     * MODALS + CUSTOM TEXT
+     ***********************/
+    function openModal(id){ $(id).classList.add("open"); }
+    function closeModal(id){ $(id).classList.remove("open"); }
+
+    function makeId(prefix){
+      return prefix + "_" + Math.random().toString(36).slice(2,8) + "_" + Date.now().toString(36);
+    }
+
+    function createCustomText(){
+      const title = $("#newTitle").value.trim();
+      const level = $("#newLevel").value;
+      const desc  = $("#newDesc").value.trim();
+      const raw   = $("#newRaw").value.replace(/\r/g,"").trim();
+
+      if(!title || !raw){
+        toast("Preencha pelo menos Título e Texto.");
+        return;
+      }
+
+      const lines = raw.split("\n")
+        .map(s=>s.trim())
+        .filter(Boolean)
+        .map(s=>({
+          jp: s,
+          jpRuby: "", // você pode preencher depois, se quiser
+          reading: "",
+          pt: "",
+          grammar: "",
+          vocab: []
+        }));
+
+      const text = {
+        id: makeId("custom"),
+        level,
+        title,
+        desc,
+        tags: ["custom"],
+        lines
+      };
+
+      state.texts.push(text);
+      saveState();
+      closeModal("#modalNew");
+      // clear
+      $("#newTitle").value = "";
+      $("#newDesc").value = "";
+      $("#newRaw").value = "";
+      setActiveText(text.id);
+      toast("Texto criado ✅");
+    }
+
+    /***********************
+     * EXPORT / IMPORT
+     ***********************/
+    function exportAll(){
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        texts: state.texts,
+        state: {
+          activeTextId: state.activeTextId,
+          ui: state.ui,
+          progress: state.progress,
+          deck: state.deck
+        }
+      };
+      const json = JSON.stringify(payload, null, 2);
+      // download via blob
+      const blob = new Blob([json], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nihongo_textlab_export.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("Exportado ✅");
+    }
+
+    function doImport(){
+      const raw = $("#importArea").value.trim();
+      if(!raw){ toast("Cole um JSON válido."); return; }
+      try{
+        const parsed = JSON.parse(raw);
+        // merge: texts concat by id unique
+        const incomingTexts = parsed.texts || [];
+        const existing = new Map((state.texts||[]).map(t=>[t.id,t]));
+        for(const t of incomingTexts){
+          if(!t?.id) continue;
+          if(!existing.has(t.id)) existing.set(t.id, t);
+          else existing.set(t.id, mergeDeep(existing.get(t.id), t));
+        }
+        state.texts = Array.from(existing.values());
+
+        // merge state buckets
+        const incState = parsed.state || {};
+        state.ui = mergeDeep(state.ui, incState.ui || {});
+        state.progress = mergeDeep(state.progress, incState.progress || {});
+        state.deck = mergeDeep(state.deck, incState.deck || {});
+        if(incState.activeTextId) state.activeTextId = incState.activeTextId;
+
+        saveState();
+        closeModal("#modalImport");
+        renderLibrary();
+        renderMain();
+        toast("Importado ✅");
+      }catch(e){
+        toast("JSON inválido.");
+      }
+    }
+
+    function resetPartial(){
+      // keep texts, wipe progress + ui minimal + deck optional? We'll wipe progress only.
+      if(!confirm("Resetar progresso (linhas revisadas, favoritos e notas)? O deck e os textos serão mantidos.")) return;
+      state.progress = {};
+      saveState();
+      renderLibrary();
+      renderMain();
+      toast("Progresso resetado.");
+    }
+
+    /***********************
+     * KPI
+     ***********************/
+    function refreshKPIs(){
+      // lines done total across all texts (built-ins + custom)
+      let doneTotal = 0;
+      for(const tid of Object.keys(state.progress||{})){
+        const p = state.progress[tid];
+        doneTotal += Object.keys(p.doneLines||{}).length;
+      }
+      $("#kpiLinesDone").textContent = doneTotal;
+      $("#kpiDeck").textContent = Object.keys(state.deck||{}).length;
+    }
+
+    /***********************
+     * TOAST
+     ***********************/
+    let toastTimer = null;
+    function toast(msg){
+      clearTimeout(toastTimer);
+      let el = $("#toast");
+      if(!el){
+        el = document.createElement("div");
+        el.id = "toast";
+        el.style.position = "fixed";
+        el.style.left = "50%";
+        el.style.bottom = "18px";
+        el.style.transform = "translateX(-50%)";
+        el.style.padding = "10px 12px";
+        el.style.borderRadius = "999px";
+        el.style.border = "1px solid rgba(255,255,255,.18)";
+        el.style.background = "rgba(0,0,0,.45)";
+        el.style.backdropFilter = "blur(10px)";
+        el.style.webkitBackdropFilter = "blur(10px)";
+        el.style.boxShadow = "0 18px 55px rgba(0,0,0,.40)";
+        el.style.color = "rgba(234,240,255,.92)";
+        el.style.fontSize = "12px";
+        el.style.fontWeight = "800";
+        el.style.zIndex = "80";
+        document.body.appendChild(el);
+      }
+      el.textContent = msg;
+      el.style.opacity = "1";
+      toastTimer = setTimeout(()=>{ el.style.opacity = "0"; }, 1600);
+    }
+
+    /***********************
+     * EVENTS
+     ***********************/
+    function bindEvents(){
+      // tabs
+      $$(".tab").forEach(t=>{
+        t.addEventListener("click", ()=> setTab(t.dataset.tab));
+      });
+
+      // library controls
+      $("#levelFilter").addEventListener("change", renderLibrary);
+      $("#searchInput").addEventListener("input", renderLibrary);
+
+      // global toggles (home)
+      $("#btnToggleFuri").addEventListener("click", toggleFurigana);
+      $("#btnToggleFuri2").addEventListener("click", toggleFurigana);
+      $("#btnToggleFuriFocus").addEventListener("click", toggleFurigana);
+
+      $("#btnToggleReading").addEventListener("click", toggleReading);
+      $("#btnToggleReading2").addEventListener("click", toggleReading);
+      $("#btnToggleReadingFocus").addEventListener("click", toggleReading);
+
+      $("#btnFontPlus").addEventListener("click", fontPlus);
+      $("#btnFontPlus2").addEventListener("click", fontPlus);
+      $("#btnFontPlusFocus").addEventListener("click", fontPlus);
+
+      $("#btnFontMinus").addEventListener("click", fontMinus);
+      $("#btnFontMinus2").addEventListener("click", fontMinus);
+      $("#btnFontMinusFocus").addEventListener("click", fontMinus);
+
+      $("#btnBookmark").addEventListener("click", toggleBookmark);
+
+      $("#btnExpandAll").addEventListener("click", expandAll);
+      $("#btnCollapseAll").addEventListener("click", collapseAll);
+
+      // focus
+      $("#btnFocus").addEventListener("click", ()=>{
+        $("#focusOverlay").classList.add("open");
+      });
+      $("#btnExitFocus").addEventListener("click", ()=>{
+        $("#focusOverlay").classList.remove("open");
+      });
+
+      // deck
+      $("#btnReveal").addEventListener("click", ()=>{
+        $("#flashCard").classList.toggle("revealed");
+      });
+      $("#btnNext").addEventListener("click", ()=>{
+        renderDeckUI();
+      });
+      $("#btnRate1").addEventListener("click", ()=> rateCard(1));
+      $("#btnRate2").addEventListener("click", ()=> rateCard(2));
+      $("#btnRate3").addEventListener("click", ()=> rateCard(3));
+      $("#btnClearDeck").addEventListener("click", ()=>{
+        if(!confirm("Limpar todo o deck?")) return;
+        state.deck = {};
+        saveState();
+        renderDeckUI();
+        refreshKPIs();
+      });
+
+      // quiz
+      $("#btnNewQuiz").addEventListener("click", renderQuiz);
+
+      // notes
+      $("#btnClearNotes").addEventListener("click", ()=>{
+        const text = getTextById(state.activeTextId);
+        if(!text) return;
+        if(!confirm("Limpar as notas deste texto?")) return;
+        ensureProgress(text.id).notes = "";
+        saveState();
+        renderNotes(text);
+        toast("Notas limpas.");
+      });
+
+      // modals
+      $("#btnNewText").addEventListener("click", ()=> openModal("#modalNew"));
+      $("#btnCloseModalNew").addEventListener("click", ()=> closeModal("#modalNew"));
+      $("#btnCreateText").addEventListener("click", createCustomText);
+
+      $("#btnExport").addEventListener("click", exportAll);
+      $("#btnImport").addEventListener("click", ()=> openModal("#modalImport"));
+      $("#btnCloseModalImport").addEventListener("click", ()=> closeModal("#modalImport"));
+      $("#btnDoImport").addEventListener("click", doImport);
+
+      $("#btnReset").addEventListener("click", resetPartial);
+
+      // close modal by clicking outside
+      ["#modalNew", "#modalImport"].forEach(mid=>{
+        $(mid).addEventListener("click", (e)=>{
+          if(e.target === $(mid)) closeModal(mid);
+        });
+      });
+
+      // keyboard shortcuts
+      window.addEventListener("keydown", (e)=>{
+        if(e.key === "Escape"){
+          $("#modalNew").classList.remove("open");
+          $("#modalImport").classList.remove("open");
+          $("#focusOverlay").classList.remove("open");
+        }
+      });
+    }
+
+    /***********************
+     * INIT
+     ***********************/
+    function init(){
+      // defaults if missing
+      state.texts = state.texts || [];
+      state.progress = state.progress || {};
+      state.deck = state.deck || {};
+      state.ui = mergeDeep({ tab:"TAB_TEXT", showFurigana:true, showReading:true, fontScale:1, hue:200 }, state.ui || {});
+      applyFontScale(state.ui.fontScale || 1);
+
+      startTheme();
+      bindEvents();
+
+      // pick first text if none selected
+      if(!state.activeTextId){
+        state.activeTextId = builtInTexts[0].id;
+      }
+      ensureProgress(state.activeTextId);
+
+      renderLibrary();
+      renderMain();
+      refreshKPIs();
+    }
+
+    init();
+  </script>
 </body>
 </html>
